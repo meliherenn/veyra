@@ -1,0 +1,44 @@
+{
+  "pid": 133346,
+  "running": false,
+  "phase": "SEARCH",
+  "paused": false,
+  "protection_or_screen_wait": true,
+  "attempts": 5,
+  "completed_cycles": 3,
+  "scrolls": 0,
+  "message": "Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.",
+  "updated_at": "2026-09-29 20:29:34",
+  "target_ids": [
+    "ay_sazani",
+    "felionlu_camca",
+    "gumus_kadife",
+    "gok_mavisi_somon"
+  ],
+  "current_name": "Gök Mavisi Somon Balığı",
+  "mastery": null,
+  "selection_mode": "name",
+  "colors": [],
+  "active_fish_id": null,
+  "last_measurement": {
+    "fish_id": "ay_sazani",
+    "seconds": 9.89
+  },
+  "elapsed_seconds": null,
+  "expected_seconds": null,
+  "energy": {
+    "value": 26,
+    "maximum": 100,
+    "estimated": true,
+    "pending": 0,
+    "updated_at": "2026-09-24 16:24:05",
+    "spend_active": false
+  },
+  "profession_phase": "IDLE",
+  "energy_cycle": false,
+  "auto_fish_id": "elmas_som",
+  "auto_cycles": 0,
+  "auto_progress": null,
+  "auto_total": null,
+  "splinter_recoveries": 0
+}

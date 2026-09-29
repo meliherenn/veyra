@@ -1,0 +1,79 @@
+{
+  "uptime_seconds": 191.0,
+  "ticks": 1106,
+  "ticks_per_second": 6.39,
+  "timings": {
+    "auto_panel": {
+      "count": 46,
+      "avg_ms": 23.5,
+      "max_ms": 25.4,
+      "total_s": 1.1
+    },
+    "capture": {
+      "count": 348,
+      "avg_ms": 19.4,
+      "max_ms": 50.2,
+      "total_s": 6.8
+    },
+    "move": {
+      "count": 14,
+      "avg_ms": 120.1,
+      "max_ms": 510.3,
+      "total_s": 1.7
+    },
+    "observe": {
+      "count": 348,
+      "avg_ms": 37.9,
+      "max_ms": 619.6,
+      "total_s": 13.2
+    },
+    "ocr": {
+      "count": 7,
+      "avg_ms": 250.5,
+      "max_ms": 591.0,
+      "total_s": 1.8
+    },
+    "protection_template": {
+      "count": 348,
+      "avg_ms": 14.6,
+      "max_ms": 22.0,
+      "total_s": 5.1
+    },
+    "ripples": {
+      "count": 21,
+      "avg_ms": 36.8,
+      "max_ms": 57.0,
+      "total_s": 0.8
+    },
+    "tick": {
+      "count": 1106,
+      "avg_ms": 22.3,
+      "max_ms": 689.8,
+      "total_s": 24.6
+    }
+  },
+  "counts": {
+    "auto_panel_fast_reject": 46,
+    "auto_panel_skipped": 315,
+    "block": 4,
+    "capture_x11": 348,
+    "click": 11,
+    "cycle_done": 3,
+    "focus_wait": 770,
+    "frames_blocked": 4,
+    "frames_layout_lost": 4,
+    "frames_transient": 2,
+    "guard_layout_changed": 1,
+    "input_calls": 110,
+    "interrupted": 3,
+    "move_failed": 1,
+    "ocr_cache_hit": 93,
+    "ocr_calls": 7,
+    "ocr_name": 3,
+    "ocr_protection": 2,
+    "ocr_yakala": 2,
+    "protection_shortcut": 348,
+    "select_timeout": 1,
+    "tick": 1106
+  }
+}

@@ -1,0 +1,160 @@
+02:52:53 Hedefler: Beyaz / Gri | F8: duraklat/devam | F9: durdur | kaydırma: True
+02:52:55 Meslek enerjisi ekrandan doğrulanıyor.
+02:52:59 TEST OS tıklama: (111, 531)
+02:52:59 Otomatik toplama menüsü açılıyor.
+02:52:59 TEST aşama: SEARCH → PROFESSION
+02:53:08 Enerji 28/100; normal avlanmayla biriktirilecek.
+02:53:15 TEST OS tıklama: (1318, 363)
+02:53:15 Meslek penceresi kapatılıyor.
+02:53:21 Avlan ekranı doğrulandı; enerji biriktirmeye devam ediliyor.
+02:53:21 TEST aşama: PROFESSION → SEARCH
+02:53:28 Balık son kontrolde yeniden bulunamadı; kara listeye alınmadan yeniden taranacak.
+02:53:35 TEST halka düzeltmesi: imleç=(334, 387) yeni=(331, 396)
+02:53:35 TEST OS tıklama: (334, 387)
+02:53:35 Halka seçildi: (334, 389). Balık adı okunuyor.
+02:53:35 TEST aşama: SEARCH → SELECTING
+02:53:40 TEST OS tıklama: (596, 243)
+02:53:40 Ay Sazanı doğrulandı; toplama başlatılıyor (1).
+02:53:40 TEST aşama: SELECTING → WAIT_START
+02:53:42 Ay Sazanı: toplama başladı. Beklenen süre 8.3 sn; ekran izleniyor.
+02:53:42 TEST aşama: WAIT_START → HARVESTING
+02:53:51 Ay Sazanı: 7.39 sn ölçüldü. Döngü: 1.
+02:53:51 TEST aşama: HARVESTING → SEARCH
+02:53:55 TEST halka düzeltmesi: imleç=(488, 322) yeni=(477, 331)
+02:53:57 TEST halka düzeltmesi: imleç=(475, 332) yeni=(483, 329)
+02:53:57 TEST OS tıklama: (475, 332)
+02:53:57 Halka seçildi: (490, 321). Balık adı okunuyor.
+02:53:57 TEST aşama: SEARCH → SELECTING
+02:54:01 TEST OS tıklama: (598, 241)
+02:54:02 Ay Sazanı doğrulandı; toplama başlatılıyor (2).
+02:54:02 TEST aşama: SELECTING → WAIT_START
+02:54:04 Ay Sazanı: toplama başladı. Beklenen süre 8.3 sn; ekran izleniyor.
+02:54:04 TEST aşama: WAIT_START → HARVESTING
+02:54:14 Ay Sazanı: 7.87 sn ölçüldü. Döngü: 2.
+02:54:14 TEST aşama: HARVESTING → SEARCH
+02:54:17 TEST halka düzeltmesi: imleç=(508, 322) yeni=(516, 317)
+02:54:17 TEST OS tıklama: (508, 322)
+02:54:18 Halka seçildi: (510, 321). Balık adı okunuyor.
+02:54:18 TEST aşama: SEARCH → SELECTING
+02:54:22 TEST OS tıklama: (598, 241)
+02:54:22 Ay Sazanı doğrulandı; toplama başlatılıyor (3).
+02:54:22 TEST aşama: SELECTING → WAIT_START
+02:54:24 Ay Sazanı: toplama başladı. Beklenen süre 8.3 sn; ekran izleniyor.
+02:54:24 TEST aşama: WAIT_START → HARVESTING
+02:54:34 Toplama penceresi kapandı. Tamamlanan döngü: 3.
+02:54:34 TEST aşama: HARVESTING → SEARCH
+02:54:38 TEST halka düzeltmesi: imleç=(418, 306) yeni=(404, 312)
+02:54:40 TEST halka düzeltmesi: imleç=(405, 312) yeni=(420, 303)
+02:54:41 TEST halka düzeltmesi: imleç=(419, 303) yeni=(414, 307)
+02:54:41 TEST OS tıklama: (419, 303)
+02:54:41 Halka seçildi: (420, 305). Balık adı okunuyor.
+02:54:41 TEST aşama: SEARCH → SELECTING
+02:54:46 TEST OS tıklama: (599, 241)
+02:54:46 Ay Sazanı doğrulandı; toplama başlatılıyor (4).
+02:54:46 TEST aşama: SELECTING → WAIT_START
+02:54:48 Ay Sazanı: toplama başladı. Beklenen süre 8.3 sn; ekran izleniyor.
+02:54:48 TEST aşama: WAIT_START → HARVESTING
+02:54:57 Ay Sazanı: 7.57 sn ölçüldü. Döngü: 4.
+02:54:57 TEST aşama: HARVESTING → SEARCH
+02:55:01 Balık son kontrolde yeniden bulunamadı; kara listeye alınmadan yeniden taranacak.
+02:55:04 TEST halka düzeltmesi: imleç=(466, 436) yeni=(466, 443)
+02:55:04 TEST OS tıklama: (466, 436)
+02:55:04 Halka seçildi: (466, 437). Balık adı okunuyor.
+02:55:04 TEST aşama: SEARCH → SELECTING
+02:55:09 TEST OS tıklama: (598, 241)
+02:55:09 Felionlu Çamça doğrulandı; toplama başlatılıyor (5).
+02:55:09 TEST aşama: SELECTING → WAIT_START
+02:55:11 Felionlu Çamça: toplama başladı. Beklenen süre 8.2 sn; ekran izleniyor.
+02:55:11 TEST aşama: WAIT_START → HARVESTING
+02:55:20 Felionlu Çamça: 7.62 sn ölçüldü. Döngü: 5.
+02:55:20 TEST aşama: HARVESTING → SEARCH
+02:55:24 TEST halka düzeltmesi: imleç=(395, 332) yeni=(396, 335)
+02:55:24 TEST OS tıklama: (395, 332)
+02:55:24 Halka seçildi: (396, 331). Balık adı okunuyor.
+02:55:24 TEST aşama: SEARCH → SELECTING
+02:55:28 TEST OS tıklama: (599, 242)
+02:55:28 Felionlu Çamça doğrulandı; toplama başlatılıyor (6).
+02:55:28 TEST aşama: SELECTING → WAIT_START
+02:55:31 Felionlu Çamça: toplama başladı. Beklenen süre 8.2 sn; ekran izleniyor.
+02:55:31 TEST aşama: WAIT_START → HARVESTING
+02:55:40 Felionlu Çamça: 7.85 sn ölçüldü. Döngü: 6.
+02:55:40 TEST aşama: HARVESTING → SEARCH
+02:55:44 TEST halka düzeltmesi: imleç=(313, 305) yeni=(310, 305)
+02:55:44 TEST OS tıklama: (313, 305)
+02:55:44 Halka seçildi: (312, 305). Balık adı okunuyor.
+02:55:44 TEST aşama: SEARCH → SELECTING
+02:55:48 TEST OS tıklama: (595, 243)
+02:55:49 Felionlu Çamça doğrulandı; toplama başlatılıyor (7).
+02:55:49 TEST aşama: SELECTING → WAIT_START
+02:55:51 Felionlu Çamça: toplama başladı. Beklenen süre 8.2 sn; ekran izleniyor.
+02:55:51 TEST aşama: WAIT_START → HARVESTING
+02:56:00 Felionlu Çamça: 7.48 sn ölçüldü. Döngü: 7.
+02:56:00 TEST aşama: HARVESTING → SEARCH
+02:56:03 TEST halka düzeltmesi: imleç=(252, 460) yeni=(254, 461)
+02:56:03 TEST OS tıklama: (252, 460)
+02:56:04 Halka seçildi: (250, 461). Balık adı okunuyor.
+02:56:04 TEST aşama: SEARCH → SELECTING
+02:56:08 TEST OS tıklama: (595, 243)
+02:56:08 Felionlu Çamça doğrulandı; toplama başlatılıyor (8).
+02:56:08 TEST aşama: SELECTING → WAIT_START
+02:56:10 Felionlu Çamça: toplama başladı. Beklenen süre 8.2 sn; ekran izleniyor.
+02:56:10 TEST aşama: WAIT_START → HARVESTING
+02:56:19 Felionlu Çamça: 7.32 sn ölçüldü. Döngü: 8.
+02:56:19 TEST aşama: HARVESTING → SEARCH
+02:56:21 Meslek enerjisi ekrandan doğrulanıyor.
+02:56:25 TEST OS tıklama: (109, 532)
+02:56:25 Otomatik toplama menüsü açılıyor.
+02:56:25 TEST aşama: SEARCH → PROFESSION
+02:56:33 Enerji 36/100; normal avlanmayla biriktirilecek.
+02:56:39 TEST OS tıklama: (1318, 364)
+02:56:39 Meslek penceresi kapatılıyor.
+02:56:45 Avlan ekranı doğrulandı; enerji biriktirmeye devam ediliyor.
+02:56:45 TEST aşama: PROFESSION → SEARCH
+02:56:52 Balık son kontrolde yeniden bulunamadı; kara listeye alınmadan yeniden taranacak.
+02:56:58 TEST halka düzeltmesi: imleç=(481, 321) yeni=(493, 304)
+02:57:02 TEST halka düzeltmesi: imleç=(351, 525) yeni=(350, 527)
+02:57:02 TEST OS tıklama: (351, 525)
+02:57:02 Halka seçildi: (350, 527). Balık adı okunuyor.
+02:57:02 TEST aşama: SEARCH → SELECTING
+02:57:07 TEST OS tıklama: (597, 243)
+02:57:07 Felionlu Çamça doğrulandı; toplama başlatılıyor (9).
+02:57:07 TEST aşama: SELECTING → WAIT_START
+02:57:09 Felionlu Çamça: toplama başladı. Beklenen süre 8.2 sn; ekran izleniyor.
+02:57:09 TEST aşama: WAIT_START → HARVESTING
+02:57:18 Felionlu Çamça: 7.57 sn ölçüldü. Döngü: 9.
+02:57:18 TEST aşama: HARVESTING → SEARCH
+02:57:22 TEST halka düzeltmesi: imleç=(476, 314) yeni=(486, 315)
+02:57:22 TEST OS tıklama: (476, 314)
+02:57:22 Halka seçildi: (478, 313). Balık adı okunuyor.
+02:57:22 TEST aşama: SEARCH → SELECTING
+02:57:27 TEST OS tıklama: (598, 241)
+02:57:27 Ay Sazanı doğrulandı; toplama başlatılıyor (10).
+02:57:27 TEST aşama: SELECTING → WAIT_START
+02:57:29 Ay Sazanı: toplama başladı. Beklenen süre 8.3 sn; ekran izleniyor.
+02:57:29 TEST aşama: WAIT_START → HARVESTING
+02:57:38 Ay Sazanı: 7.33 sn ölçüldü. Döngü: 10.
+02:57:38 TEST aşama: HARVESTING → SEARCH
+02:57:42 Balık son kontrolde yeniden bulunamadı; kara listeye alınmadan yeniden taranacak.
+02:57:45 TEST halka düzeltmesi: imleç=(469, 436) yeni=(466, 439)
+02:57:45 TEST OS tıklama: (469, 436)
+02:57:45 Halka seçildi: (470, 435). Balık adı okunuyor.
+02:57:45 TEST aşama: SEARCH → SELECTING
+02:57:49 TEST OS tıklama: (599, 241)
+02:57:49 Ay Sazanı doğrulandı; toplama başlatılıyor (11).
+02:57:49 TEST aşama: SELECTING → WAIT_START
+02:57:51 Ay Sazanı: toplama başladı. Beklenen süre 8.3 sn; ekran izleniyor.
+02:57:51 TEST aşama: WAIT_START → HARVESTING
+02:58:01 Toplama penceresi kapandı. Tamamlanan döngü: 11.
+02:58:01 TEST aşama: HARVESTING → SEARCH
+02:58:04 TEST halka düzeltmesi: imleç=(499, 464) yeni=(504, 469)
+02:58:04 TEST OS tıklama: (499, 464)
+02:58:04 Halka seçildi: (498, 465). Balık adı okunuyor.
+02:58:04 TEST aşama: SEARCH → SELECTING
+02:58:09 TEST OS tıklama: (598, 243)
+02:58:09 Ay Sazanı doğrulandı; toplama başlatılıyor (12).
+02:58:09 TEST aşama: SELECTING → WAIT_START
+02:58:11 Ay Sazanı: toplama başladı. Beklenen süre 8.3 sn; ekran izleniyor.
+02:58:11 TEST aşama: WAIT_START → HARVESTING
+02:58:21 Ay Sazanı: 7.87 sn ölçüldü. Döngü: 12.
+02:58:21 TEST aşama: HARVESTING → SEARCH
+02:58:24 Bitti. Toplama denemesi: 12 | tamamlanan döngü: 12 | kaydırma: 0

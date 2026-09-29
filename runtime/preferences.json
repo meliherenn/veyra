@@ -1,0 +1,20 @@
+{
+  "mode": "name",
+  "colors": [
+    "beyaz"
+  ],
+  "fish": [
+    "ay_sazani",
+    "felionlu_camca",
+    "gumus_kadife",
+    "gok_mavisi_somon"
+  ],
+  "auto_scroll": false,
+  "minimize": true,
+  "max_cycles": 0,
+  "max_minutes": 0,
+  "mastery": -1,
+  "energy_cycle": false,
+  "auto_fish": "gok_mavisi_somon",
+  "auto_splinter": true
+}

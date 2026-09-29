@@ -1,0 +1,57 @@
+{
+  "seconds": 60.0,
+  "travel_seconds": 0.3,
+  "episodes": 92,
+  "successes": 90,
+  "failures": 2,
+  "failure_rate": 0.022,
+  "blocked_ticks": 0,
+  "no_ring_ticks": 0,
+  "guard_classes": {
+    "halka_yok": 2,
+    "kayma": 0,
+    "uzak": 0
+  },
+  "follow": {
+    "animasyon": 2,
+    "hareket": 0,
+    "kayip": 0
+  },
+  "follow_seconds": {
+    "p50": 0.53,
+    "max": 0.53
+  },
+  "success_distance": {
+    "p50": 2.0,
+    "p90": 10.8,
+    "max": 20.2
+  },
+  "accept_median": 10.8,
+  "failures_detail": [
+    {
+      "x": 494,
+      "y": 471,
+      "color": "yesil",
+      "radius": 16,
+      "guard_class": "halka_yok",
+      "guard_distance": null,
+      "follow": "animasyon",
+      "follow_seconds": 0.27,
+      "limit": 47.9,
+      "accept": 9.6
+    },
+    {
+      "x": 488,
+      "y": 447,
+      "color": "yesil",
+      "radius": 21,
+      "guard_class": "halka_yok",
+      "guard_distance": null,
+      "follow": "animasyon",
+      "follow_seconds": 0.53,
+      "limit": 47.9,
+      "accept": 12.6
+    }
+  ],
+  "saved_crops": 2
+}

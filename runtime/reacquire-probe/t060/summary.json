@@ -1,0 +1,105 @@
+{
+  "seconds": 60.5,
+  "travel_seconds": 0.6,
+  "episodes": 62,
+  "successes": 56,
+  "failures": 6,
+  "failure_rate": 0.097,
+  "blocked_ticks": 0,
+  "no_ring_ticks": 0,
+  "guard_classes": {
+    "halka_yok": 5,
+    "kayma": 0,
+    "uzak": 1
+  },
+  "follow": {
+    "animasyon": 6,
+    "hareket": 0,
+    "kayip": 0
+  },
+  "follow_seconds": {
+    "p50": 0.27,
+    "max": 0.53
+  },
+  "success_distance": {
+    "p50": 2.0,
+    "p90": 11.0,
+    "max": 20.4
+  },
+  "accept_median": 11.4,
+  "failures_detail": [
+    {
+      "x": 540,
+      "y": 425,
+      "color": "beyaz",
+      "radius": 22,
+      "guard_class": "halka_yok",
+      "guard_distance": null,
+      "follow": "animasyon",
+      "follow_seconds": 0.27,
+      "limit": 47.9,
+      "accept": 13.2
+    },
+    {
+      "x": 712,
+      "y": 343,
+      "color": "beyaz",
+      "radius": 21,
+      "guard_class": "uzak",
+      "guard_distance": 386.5,
+      "follow": "animasyon",
+      "follow_seconds": 0.27,
+      "limit": 47.9,
+      "accept": 12.6
+    },
+    {
+      "x": 530,
+      "y": 455,
+      "color": "beyaz",
+      "radius": 23,
+      "guard_class": "halka_yok",
+      "guard_distance": null,
+      "follow": "animasyon",
+      "follow_seconds": 0.53,
+      "limit": 47.9,
+      "accept": 13.8
+    },
+    {
+      "x": 388,
+      "y": 593,
+      "color": "yesil",
+      "radius": 17,
+      "guard_class": "halka_yok",
+      "guard_distance": null,
+      "follow": "animasyon",
+      "follow_seconds": 0.27,
+      "limit": 47.9,
+      "accept": 10.2
+    },
+    {
+      "x": 414,
+      "y": 607,
+      "color": "yesil",
+      "radius": 14,
+      "guard_class": "halka_yok",
+      "guard_distance": null,
+      "follow": "animasyon",
+      "follow_seconds": 0.26,
+      "limit": 47.9,
+      "accept": 8.4
+    },
+    {
+      "x": 504,
+      "y": 463,
+      "color": "yesil",
+      "radius": 22,
+      "guard_class": "halka_yok",
+      "guard_distance": null,
+      "follow": "animasyon",
+      "follow_seconds": 0.28,
+      "limit": 47.9,
+      "accept": 13.2
+    }
+  ],
+  "saved_crops": 6
+}
