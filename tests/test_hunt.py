@@ -608,6 +608,7 @@ def test_fight_actions_run_once_per_fight(mocked, monkeypatch):
     bot = mocked
     bot.provoke = bot.mount_summon = bot.auto_battle = True
     bot.fight_actions_done = False
+    bot.vision.confirm_apply_button.return_value = None  # bekleyen onay yok
     performed = []
     monkeypatch.setattr(bot, 'perform_fight_actions', lambda: performed.append(1))
     obs = SimpleNamespace(blocked='Avlan haritası görünmüyor', layout=None)
@@ -615,6 +616,24 @@ def test_fight_actions_run_once_per_fight(mocked, monkeypatch):
     bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, main.time.monotonic())
     bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, main.time.monotonic())
     assert performed == [1]
+
+
+def test_pending_confirm_is_retried_during_fight_wait(mocked, monkeypatch):
+    """Onay tıklaması odağı kaybedince yarım kalmıştı; dövüş beklerken Uygula
+    bir kez daha denenir, pencere yoksa boşuna bakınılmaz."""
+    bot = mocked
+    bot.provoke = bot.mount_summon = bot.auto_battle = True
+    bot.fight_actions_done = True
+    bot.confirm_retries = 0
+    bot.last_confirm_check = 0.0
+    bot.phase, bot.engaged_at = 'ENGAGED', main.time.monotonic()
+    bot.vision.confirm_apply_button.side_effect = [(960, 540), None]
+    performed = []
+    monkeypatch.setattr(bot, 'confirm_pending_action', lambda window=1.5: performed.append(window))
+    obs = SimpleNamespace(blocked=None, layout=None)
+    bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, main.time.monotonic())
+    bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, main.time.monotonic() + 2)
+    assert performed == [1.5] and bot.confirm_retries == 1
 
 
 def test_new_attack_rearms_fight_actions(mocked):

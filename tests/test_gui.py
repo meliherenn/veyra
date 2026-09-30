@@ -103,6 +103,20 @@ def test_console_log_is_rotated_before_each_launch(panel):
     assert path.stat().st_size == 0
 
 
+def test_all_creatures_dim_individual_choices(panel):
+    """'Tüm yaratıklar' işaretliyken tek tek kutular etkisiz görünür; kullanıcı
+    yalnızca Yaslı Phadd seçtiğini sanıp botun tümüne dalmasını anlamaz."""
+    panel.mode_hunt.setChecked(True)
+    panel.auto_battle_cb.setChecked(False);panel.mount_cb.setChecked(False);panel.provoke_cb.setChecked(False)
+    panel.hunt_all.setChecked(True)
+    assert not panel.hunt_checks['krogan'].isEnabled()
+    assert panel.worker_command()[1:3]==['--hunt','--creatures']
+    panel.hunt_all.setChecked(False)
+    assert panel.hunt_checks['krogan'].isEnabled()
+    panel.hunt_checks['maharetli_fitsilya'].setChecked(False)
+    assert panel.worker_command()[1:]==['--hunt','--creatures','krogan']
+
+
 def test_hunt_mode_builds_the_creature_command(panel):
     panel.mode_hunt.setChecked(True)
     panel.auto_battle_cb.setChecked(False);panel.mount_cb.setChecked(False);panel.provoke_cb.setChecked(False)

@@ -114,7 +114,9 @@ class ControlWindow(QMainWindow):
         hunt_layout=QVBoxLayout(self.hunt_card);hunt_layout.setContentsMargins(12,12,12,12);hunt_layout.setSpacing(8)
         hunt_layout.addWidget(label('AV HEDEFİ',muted=True))
         self.hunt_all=QCheckBox('Tüm yaratıklar')
-        self.hunt_all.setToolTip('Kataloğa bakılmaksızın haritadaki her yaratığa saldırır.')
+        self.hunt_all.setToolTip('Kataloğa bakılmaksızın haritadaki her yaratığa saldırır. '
+                                 'İşaretliyken alttaki tek tek kutular etkisizdir.')
+        self.hunt_all.toggled.connect(self.hunt_all_toggled)
         hunt_layout.addWidget(self.hunt_all)
         self.hunt_checks={}
         self.hunt_grid=QGridLayout();self.hunt_grid.setSpacing(3)
@@ -299,6 +301,13 @@ class ControlWindow(QMainWindow):
         self.setWindowTitle('Ejderhalar Mirası · ' + ('Avlan Kontrolü' if on else 'Balıkçılık Kontrolü'))
         self.selection_changed()
 
+    def hunt_all_toggled(self,on):
+        """'Tüm yaratıklar' işaretliyken tek tek kutuların etkisiz olduğu görünsün;
+        aksi halde kullanıcı yalnızca Yaslı Phadd seçtiğini sanır, bot yine tümüne dalar."""
+        if not hasattr(self,'hunt_checks'):return
+        for checkbox in self.hunt_checks.values():
+            checkbox.setEnabled(not on)
+
     def hunt_add_creature(self):
         """Yazılan özel yaratığı listeye işaretlenebilir kutu olarak ekler."""
         name=self.hunt_input.text().strip()
@@ -311,6 +320,7 @@ class ControlWindow(QMainWindow):
         count=self.hunt_grid.count()
         self.hunt_grid.addWidget(checkbox,count//2,count%2)
         checkbox.setChecked(True)
+        checkbox.setEnabled(not self.hunt_all.isChecked())
         self.hunt_input.clear()
 
     def hunt_remove_creature(self):
@@ -393,6 +403,7 @@ class ControlWindow(QMainWindow):
         self.mode_fishing.setChecked(not prefs.get('hunt_mode',False))
         self.mode_hunt.setChecked(prefs.get('hunt_mode',False))
         self.hunt_toggled(self.mode_hunt.isChecked())
+        self.hunt_all_toggled(self.hunt_all.isChecked())
 
     def save_preferences(self):
         prefs=self.selection()|{'auto_scroll':self.auto_scroll.isChecked(),'minimize':self.minimize.isChecked(),

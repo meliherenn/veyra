@@ -20,7 +20,8 @@ from config import (POLL_INTERVAL, SELECT_TIMEOUT, TARGET_RETRY_SECONDS, NO_FISH
                     HUNT_FIGHT_TIMEOUT, HUNT_RETURN_RETRY, HUNT_RETURN_CLICK_LIMIT,
                     HUNT_SELECT_FAILURES_BEFORE_PAUSE, HUNT_AVOID_SECONDS,
                     HUNT_PROVOKE_BAR_TIMEOUT, HUNT_SUMMON_CLICK_PAUSE,
-                    HUNT_FIGHT_SETTLE_SECONDS, HUNT_SUMMON_MAX_PER_SLOT)
+                    HUNT_FIGHT_SETTLE_SECONDS, HUNT_SUMMON_MAX_PER_SLOT,
+                    HUNT_CONFIRM_RETRIES)
 from hunt_catalog import KNOWN, match_species, name_score, resolve_requested
 from hunt_vision import HuntVision
 import main
@@ -47,6 +48,8 @@ class HuntBot(FishingBot):
         self.auto_battle = bool(getattr(args, 'auto_battle', False))
         self.provoke_counts = [int(n) for n in (getattr(args, 'provoke_counts', None) or [])]
         self.fight_actions_done = False
+        self.confirm_retries = 0
+        self.last_confirm_check = 0.0
         self.fights = 0
         self.select_failures = 0
         self.dy_index = 0
@@ -272,6 +275,16 @@ class HuntBot(FishingBot):
                 else:
                     self.perform_fight_actions()
                     return
+            elif self.fight_actions_done and self.confirm_retries < HUNT_CONFIRM_RETRIES \
+                    and now - self.last_confirm_check >= 1.0:
+                # Onay penceresi açıkken odağı kaybolduysa Uygula yarım kalmıştır;
+                # odaq dönünce dövüş boyunca yeniden denenir.
+                self.last_confirm_check = now
+                fresh = self.detector.capture()
+                if self.vision.confirm_apply_button(fresh):
+                    self.confirm_retries += 1
+                    self.notice('Bekleyen eylem onayı görüldü; Uygula deneniyor.')
+                    self.confirm_pending_action(1.5)
             self.notice(f'Dövüş sürüyor ({waited:.0f} sn); sonuç ekranı bekleniyor.')
             return
         # Dövüş dışında harita görünmüyor: kullanıcı başka bir ekrana geçmiş olabilir.
@@ -282,14 +295,19 @@ class HuntBot(FishingBot):
                    alarm=False, seconds=RESUME_FAST_SECONDS)
 
     # -------------------------------------------------------- dövüş içi eylemler
-    def neutral_move(self, like_frame):
-        """İmleci ekranın boş bir noktasına alır: okuma karelerinde düğme/ kart
-        vurgusu (hover) şablonları ve sayaç rakamlarını karştırmasın."""
+    def neutral_move(self, like_frame, anchor=None):
+        """İmleci okumayı karıştırmayacak boş bir noktaya alır. anchor verilirse
+        (çağırma çubuğu) sadece biraz yukarısına gider: uzun yolculuk yavaş."""
         h, w = like_frame.shape[:2]
+        target = (anchor[0], max(80, anchor[1] - 170)) if anchor else (w//2, h//3)
         try:
-            self.mouse.move_to(*self.pixel_to_desktop((w//2, h//3), like_frame))
+            self.mouse.move_to(*self.pixel_to_desktop(target, like_frame))
         except (InterruptedError, ValueError):
             pass
+
+    def capture_parked(self, like_frame, anchor=None):
+        self.neutral_move(like_frame, anchor)
+        return self.detector.capture()
 
     def fight_guard(self, kind, point):
         """Dövüş düğmesi tıklamasından hemen önce: koruma, odak ve hâlâ dövüş
@@ -390,7 +408,7 @@ class HuntBot(FishingBot):
         return False
 
     def perform_fight_actions(self):
-        """Dövüş başladıktan sonra bir kez: provokasyon -> binek -> otomatik savaş."""
+        """Dövüş başladıktan sonra bir kez: provokasyon -> oto savaş -> binek."""
         time.sleep(HUNT_FIGHT_SETTLE_SECONDS)
         frame = self.detector.capture()
         if self.provoke:
@@ -398,18 +416,13 @@ class HuntBot(FishingBot):
                 self.run_provoke(frame)
             except InterruptedError as error:
                 self.notice(f'Provokasyon yarıda kaldı: {error}')
-        if self.mount_summon or self.auto_battle:
-            # Önceki tıklamanın hover'ı bir sonraki düğmeyi maskelemesin.
-            self.neutral_move(frame)
-            frame = self.detector.capture()
-        if self.mount_summon:
-            if self.click_fight_button(frame, 'mount', 'Binek çağırılıyor.'):
-                self.confirm_pending_action()
-            if self.auto_battle:
-                self.neutral_move(frame)
-                frame = self.detector.capture()
+        frame = self.capture_parked(frame)
         if self.auto_battle:
             if self.click_fight_button(frame, 'auto', 'Otomatik savaş açılıyor.'):
+                self.confirm_pending_action()
+            frame = self.capture_parked(frame)
+        if self.mount_summon:
+            if self.click_fight_button(frame, 'mount', 'Binek çağırılıyor.'):
                 self.confirm_pending_action()
 
     def run_provoke(self, frame):
@@ -448,11 +461,9 @@ class HuntBot(FishingBot):
                 continue
             anchor_x = slots[index][0]
             previous_mask = None
+            unchanged = 0
             summoned = 0
             while summoned < wanted:
-                # Tıklama sonrası imleç slotun üstünde kalır; hover, sayaç
-                # rakamlarını karıştırabileceği için okumadan önce boşa alınır.
-                self.neutral_move(fresh)
                 fresh = self.detector.capture()
                 current, _locks = self.vision.summon_slots(fresh)
                 slot = next((s for s in current if abs(s[0] - anchor_x) <= 10), None)
@@ -461,9 +472,16 @@ class HuntBot(FishingBot):
                     return
                 mask = self.vision.counter_mask(fresh, slot[2])
                 if previous_mask is not None and mask is not None and np.array_equal(mask, previous_mask):
+                    # İmleç kartın üstünde vurgu sayacı gizliyor olabilir: bir kez
+                    # imleci kenara alıp yeniden oku; hâlâ aynıysa jeton bitmiştir.
+                    unchanged += 1
+                    if unchanged == 1:
+                        self.neutral_move(fresh, (slot[0], slot[1]))
+                        continue
                     self.notice(f'{index + 1}. slotta sayaç değişmedi; jeton bitmiş ya da '
                                 'sınır dolmuş olabilir. Kalan çağrılar atlandı.')
                     break
+                unchanged = 0
                 self.mouse.click(*self.pixel_to_desktop((slot[0], slot[1]), fresh),
                                  before_click=lambda p=(slot[0], slot[1]): self.summon_guard(p))
                 summoned += 1
@@ -511,6 +529,8 @@ class HuntBot(FishingBot):
                 self.phase, self.since = 'ENGAGED', time.monotonic()
                 self.engaged_at = self.since
                 self.fight_actions_done = False
+                self.confirm_retries = 0
+                self.last_confirm_check = 0.0
                 self.note_selection_success()
                 self.notice(f'{self.target.name.title()} [{self.target.level}] doğrulandı; saldırılıyor ({self.attempts}).')
                 return
