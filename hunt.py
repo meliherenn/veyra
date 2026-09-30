@@ -344,6 +344,51 @@ class HuntBot(FishingBot):
         self.notice(message)
         return True
 
+    def confirm_guard(self, point, threshold=0.70):
+        """Onay tıklamasından hemen önce: koruma/odak; pencere hâlâ açık mı?
+
+        Düğme şablonu düşük eşikle ve noktanın çevresinde aranır: imleç
+        düğmenin üstüne gelince vurgu tam skoru düşürüyor olabilir.
+        """
+        self.control_guard()
+        if not self.desktop.is_game_active():
+            raise InterruptedError('Oyun odaktan çıktı; onay verilmedi.')
+        fresh = self.detector.capture()
+        protected, reason = self.detector.check_bot_protection(fresh)
+        if protected:
+            self.block(reason or 'Bot koruması.', fresh)
+            raise InterruptedError('Bot koruması; onay verilmedi.')
+        fresh_h, fresh_w = fresh.shape[:2]
+        x0, x1 = max(0, point[0] - 20), min(fresh_w, point[0] + 20)
+        y0, y1 = max(0, point[1] - 20), min(fresh_h, point[1] + 20)
+        region = fresh[y0:y1, x0:x1]
+        if self.vision.apply_template is None:
+            return
+        res = cv2.matchTemplate(region, self.vision.apply_template, cv2.TM_CCOEFF_NORMED)
+        if float(res.max()) < threshold:
+            raise InterruptedError('Onay penceresi son kontrolde görünmedi.')
+
+    def confirm_pending_action(self, window=2.0):
+        """Eylem onay penceresi ('...onaylayın') açıldıysa Uygula'ya basar.
+
+        Binek çağırma oyunun standart onay penceresini açar; onaylanmadığında
+        dövüş donuk kalıyordu. Pencere yoksa pencere süresi kadar bakınır ve
+        False döner.
+        """
+        deadline = time.monotonic() + window
+        while time.monotonic() < deadline:
+            fresh = self.detector.capture()
+            button = self.vision.confirm_apply_button(fresh)
+            if button:
+                self.mouse.click(*self.pixel_to_desktop(button, fresh),
+                                 before_click=lambda p=button: self.confirm_guard(p))
+                METRICS.bump('confirm_apply')
+                self.notice('Eylem onayı Uygula ile verildi.')
+                time.sleep(0.6)
+                return True
+            time.sleep(0.4)
+        return False
+
     def perform_fight_actions(self):
         """Dövüş başladıktan sonra bir kez: provokasyon -> binek -> otomatik savaş."""
         time.sleep(HUNT_FIGHT_SETTLE_SECONDS)
@@ -358,12 +403,14 @@ class HuntBot(FishingBot):
             self.neutral_move(frame)
             frame = self.detector.capture()
         if self.mount_summon:
-            self.click_fight_button(frame, 'mount', 'Binek çağırılıyor.')
+            if self.click_fight_button(frame, 'mount', 'Binek çağırılıyor.'):
+                self.confirm_pending_action()
             if self.auto_battle:
                 self.neutral_move(frame)
                 frame = self.detector.capture()
         if self.auto_battle:
-            self.click_fight_button(frame, 'auto', 'Otomatik savaş açılıyor.')
+            if self.click_fight_button(frame, 'auto', 'Otomatik savaş açılıyor.'):
+                self.confirm_pending_action()
 
     def run_provoke(self, frame):
         """Provokasyonu aç, çağırma çubuğunu bekle, slot sırasına göre çağır.

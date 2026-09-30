@@ -216,6 +216,44 @@ def test_mount_flag_reaches_the_bot():
     assert bot.mount_summon is True and bot.provoke is True and bot.auto_battle is True
 
 
+def test_live_summon_bar_slots_and_locks_are_found(vision):
+    """Canlı 1920 çekimi: sayaç rakamları tam parlak camgöbeğidir (4,254,254);
+    eski maske sınırı onları kaçırıp 'çubuk açılmadı' dedirtiyordu."""
+    f = frame('hunt-live-bar.png')
+    slots, locks = vision.summon_slots(f)
+    assert len(locks) == 3
+    assert len(slots) == 2
+    assert [s[0] for s in slots] == sorted(s[0] for s in slots)
+    assert slots[0][0] < locks[0][0]
+    for slot in slots:
+        assert abs(slot[1] - locks[0][1]) <= 3  # tıklama noktası kart gövdesinde
+    # Araç çubuğu bu çekimde daha aşağıdadır; üç düğme yine aynı sütunda.
+    provoke = vision.fight_button(f, 'provoke')
+    mount = vision.fight_button(f, 'mount')
+    assert provoke and mount and provoke[0] == mount[0]
+
+
+def test_confirm_apply_clicks_the_dialog_button(mocked):
+    """Binek çağırma 'Eylem ... onaylayın' penceresi açar; Uygula'ya basılır."""
+    bot = mocked
+    bot.args.dry_run = False
+    apply_point = (960, 540)
+    bot.vision.confirm_apply_button.side_effect = [apply_point, None]
+    bot.detector.check_bot_protection.return_value = (False, '')
+    assert bot.confirm_pending_action(window=1.0) is True
+    assert bot.mouse.click.call_count == 1
+    assert bot.mouse.click.call_args.args[:2] == main_module_pixel(bot, apply_point)
+    # Pencere hiç çıkmazsa False döner, tıklama gitmez.
+    bot.mouse.reset_mock()
+    bot.vision.confirm_apply_button.return_value = None
+    assert bot.confirm_pending_action(window=0.4) is False
+    bot.mouse.click.assert_not_called()
+
+
+def main_module_pixel(bot, point):
+    return bot.pixel_to_desktop(point, bot.detector.capture.return_value)
+
+
 # --------------------------------------------------- sahte oyun (uçtan uca)
 class FakeGame:
     """Gerçek ekran görüntülerinden kurulan küçük oyun: harita -> seçim -> dövüş -> sonuç."""
@@ -557,6 +595,7 @@ def test_fight_actions_click_provoke_summon_mount_then_auto(mocked):
     bot.vision.summon_slots.return_value = ([slot], [(300, 200)])
     # Sayaç hiç değişmiyor: ikinci çağrıda jeton bitmiş sayılır, slot 1 tıklamada biter.
     bot.vision.counter_mask.return_value = np.zeros((12, 24), np.uint8)
+    bot.vision.confirm_apply_button.return_value = None  # onay penceresi çıkmıyor
     bot.args.dry_run = False
     bot.perform_fight_actions()
     assert bot.mouse.click.call_count == 4  # provoke + 1 çağırma + mount + auto

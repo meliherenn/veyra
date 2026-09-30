@@ -64,6 +64,14 @@ class HuntVision:
             template = cv2.imread(str(path), cv2.IMREAD_COLOR)
             if template is not None:
                 self.lock_template = cv2.cvtColor(template, cv2.COLOR_BGR2RGB)
+        # Eylem onay penceresinin 'Uygula' düğmesi (binek çağırma vb.). Oyunun
+        # standart onay penceresi iksir onayıyla aynı düğme resmini kullanır.
+        self.apply_template = None
+        path = ROOT / 'assets' / 'profession-potion-apply.png'
+        if path.exists():
+            template = cv2.imread(str(path), cv2.IMREAD_COLOR)
+            if template is not None:
+                self.apply_template = cv2.cvtColor(template, cv2.COLOR_BGR2RGB)
 
     # ------------------------------------------------------------------ harita
     @staticmethod
@@ -273,12 +281,30 @@ class HuntVision:
             score, center = self._best_match(frame, template)
         return center if score >= limit else None
 
+    def confirm_apply_button(self, frame, threshold=0.86):
+        """Eylem onay penceresindeki 'Uygula' düğmesinin merkezi; yoksa None.
+
+        Binek çağırma gibi eylemler oyunun standart onay penceresini açar
+        ('...eyleminin gerçekleştirilmesini onaylayın' — Uygula / İptal).
+        Düğme resmi iksir onayıyla aynıdır; küçük ölçek farklarına tolerans
+        için çok ölçekli aranır.
+        """
+        if self.apply_template is None:
+            return None
+        score, center = self._best_match(frame, self.apply_template,
+                                         scales=(1.0, 0.9, 1.1, 0.8, 1.2))
+        return center if score >= threshold else None
+
     @staticmethod
     def _teal_mask(region):
-        """Çağırma sayacı rakamlarının camgöbeği maskesi ('kullanilan/limit')."""
+        """Çağırma sayacı rakamlarının camgöbeği maskesi ('kullanilan/limit').
+
+        Canlı ekran rakamları tam parlaklıktadır (4,254,254); foto çekiminde
+        daha soluktu (158,184,189). Alt/üst parlaklik siniri konmaz: ikisini
+        de kapsasin, yabancı öğeler satır/kluster mantığıyla ayrılır.
+        """
         r, g, b = region.astype(np.int16).transpose(2, 0, 1)
-        return ((g > 115) & (b > 115) & (r < g - 25) & (r < b - 25)
-                & (g < 225) & (b < 225)).astype(np.uint8)
+        return ((g > 110) & (b > 110) & (r < g - 15) & (r < b - 15)).astype(np.uint8)
 
     def summon_slots(self, frame, lock_threshold=0.80):
         """Provokasyon çağırma çubuğundaki açık slotlar, soldan sağa.
