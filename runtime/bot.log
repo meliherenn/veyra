@@ -27601,3 +27601,99 @@ subprocess.CalledProcessError: Command '['tesseract', '/tmp/dwar-fishing-dhpzm5l
 11:41:02 Yaratık avı: Maharetli Fitsilya, Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
 11:41:02 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
 11:41:14 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+11:45:37 Yaratık avı: Maharetli Fitsilya, Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
+11:45:37 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+11:45:40 Oyun ekranı geri geldi; kararlı görüntü bekleniyor.
+11:45:43 Ekran doğrulandı; devam ediliyor.
+11:45:44 Önizleme: 5 yaratık; hedef maharetli fltsllya[4]. Fare kullanılmıyor.
+11:45:45 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+11:45:47 Oyun ekranı geri geldi; kararlı görüntü bekleniyor.
+11:45:50 Ekran doğrulandı; devam ediliyor.
+11:45:50 Önizleme: 5 yaratık; hedef kragan[4]. Fare kullanılmıyor.
+11:45:52 Önizleme: 6 yaratık; hedef kragan[4]. Fare kullanılmıyor.
+11:45:56 Elle duraklatıldı. Devam: F8. Durdur: F9.
+11:46:02 Oyun ekranı geri geldi; kararlı görüntü bekleniyor.
+11:46:03 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+11:46:05 Oyun ekranı geri geldi; kararlı görüntü bekleniyor.
+11:46:08 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+11:47:30 Yaratık avı: Maharetli Fitsilya, Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
+11:47:31 Maharetli Fltsllya [4] seçildi: (959, 580). Saldır düğmesi bekleniyor.
+11:47:33 Maharetli Fltsllya [4] doğrulandı; saldırılıyor (1).
+11:47:33 Dövüş sürüyor (1 sn); sonuç ekranı bekleniyor.
+11:47:34 Dövüş sürüyor (2 sn); sonuç ekranı bekleniyor.
+11:47:35 Dövüş sürüyor (3 sn); sonuç ekranı bekleniyor.
+11:47:37 Dövüş sürüyor (4 sn); sonuç ekranı bekleniyor.
+11:47:38 Dövüş sürüyor (5 sn); sonuç ekranı bekleniyor.
+11:47:39 Dövüş sürüyor (6 sn); sonuç ekranı bekleniyor.
+11:47:40 Dövüş sürüyor (7 sn); sonuç ekranı bekleniyor.
+11:47:41 Dövüş sürüyor (8 sn); sonuç ekranı bekleniyor.
+11:47:42 Dövüş sürüyor (9 sn); sonuç ekranı bekleniyor.
+11:47:43 Dövüş sürüyor (10 sn); sonuç ekranı bekleniyor.
+11:47:44 Dövüş sürüyor (11 sn); sonuç ekranı bekleniyor.
+11:47:45 Dövüş sürüyor (12 sn); sonuç ekranı bekleniyor.
+11:47:46 Dövüş sürüyor (13 sn); sonuç ekranı bekleniyor.
+11:47:47 Dövüş sürüyor (14 sn); sonuç ekranı bekleniyor.
+11:47:48 Dövüş sürüyor (15 sn); sonuç ekranı bekleniyor.
+11:47:49 Dövüş sürüyor (16 sn); sonuç ekranı bekleniyor.
+11:47:50 Dövüş sürüyor (17 sn); sonuç ekranı bekleniyor.
+11:47:51 Dövüş sürüyor (18 sn); sonuç ekranı bekleniyor.
+11:47:52 Dövüş sürüyor (19 sn); sonuç ekranı bekleniyor.
+11:47:53 Dövüş bitti (1); "Ava" ile haritaya dönülüyor.
+11:47:54 Dövüş tamamlandı, haritaya dönüldü. Tamamlanan: 1.
+11:47:54 Kragan [4] seçildi: (835, 521). Saldır düğmesi bekleniyor.
+11:47:56 Kragan [4] doğrulandı; saldırılıyor (2).
+11:47:57 Dövüş sürüyor (1 sn); sonuç ekranı bekleniyor.
+11:47:58 Dövüş sürüyor (2 sn); sonuç ekranı bekleniyor.
+11:47:59 Bot hata nedeniyle durdu. Fare işlemleri sona erdi.
+Traceback (most recent call last):
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/main.py", line 771, in main
+    bot.tick()
+    ~~~~~~~~^^
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/hunt.py", line 183, in tick
+    obs = self.detector.observe(frame)
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/screen_detector.py", line 571, in observe
+    return self._observe(frame)
+           ~~~~~~~~~~~~~^^^^^^^
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/screen_detector.py", line 605, in _observe
+    protection, reason = self.check_bot_protection(frame, protection)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/screen_detector.py", line 252, in check_bot_protection
+    text = self.ocr(frame[int(h*.23):int(h*.82), int(w*.25):int(w*.75)], psm=11, scale=1,
+                    label='protection')
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/screen_detector.py", line 175, in ocr
+    result = subprocess.run(["tesseract", str(path), "stdout", "-l", "tur+eng",
+                             "--psm", str(psm), "--oem", "1"], capture_output=True, text=True,
+                            check=True, timeout=OCR_TIMEOUT,
+                            env=dict(os.environ,OMP_THREAD_LIMIT='1'))
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['tesseract', '/tmp/dwar-fishing-azwoqn6q/ocr.png', 'stdout', '-l', 'tur+eng', '--psm', '11', '--oem', '1']' died with <Signals.SIGINT: 2>.
+11:47:59 Bitti. Saldırı denemesi: 2 | tamamlanan döngü: 1 | kaydırma: 0
+11:50:26 Yaratık avı: Maharetli Fitsilya, Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
+11:50:26 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+11:50:32 Durdurma sırasında beklenmeyen kesinti; fare işlemleri sona erdi.
+11:50:32 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+11:51:41 Yaratık avı: Maharetli Fitsilya, Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
+11:51:41 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+11:51:47 Durdurma sırasında beklenmeyen kesinti (StopRequested); fare işlemleri sona erdi.
+11:51:47 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+11:53:33 Yaratık avı: Maharetli Fitsilya, Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
+11:53:33 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+11:53:38 Durdurma komutu alındı.
+11:53:38 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+11:53:55 Yaratık avı: Maharetli Fitsilya, Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
+11:53:55 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+11:54:00 Durdurma komutu alındı.
+11:54:00 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+11:54:43 Yaratık avı: Maharetli Fitsilya, Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
+11:54:44 Görünen yaratıklar atlandı: tas lotusu surgunu[5]: seçili değil; tas lotusu surgunu[5]: seçili değil
+11:54:46 Uygun yaratık aranıyor; harita aşağı kaydırıldı.
+11:54:47 Harita kaydı; yaratıkların yeni konumları taranıyor.
+11:54:47 Görünen yaratıklar atlandı: tas lotusu surgunu[5]: seçili değil
+11:54:49 Uygun yaratık aranıyor; harita aşağı kaydırıldı.
+11:54:50 Harita kaydı; yaratıkların yeni konumları taranıyor.
+11:54:50 Görünen yaratıklar atlandı: tas lotusu surgunu[5]: seçili değil
+11:54:53 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+11:54:55 Durdurma komutu alındı.
+11:54:55 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 2

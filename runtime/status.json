@@ -1,14 +1,14 @@
 {
-  "pid": 107702,
+  "pid": 113400,
   "running": false,
   "phase": "SEARCH",
   "paused": false,
   "protection_or_screen_wait": true,
   "attempts": 0,
   "completed_cycles": 0,
-  "scrolls": 0,
+  "scrolls": 2,
   "message": "Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.",
-  "updated_at": "2026-09-30 11:41:14",
+  "updated_at": "2026-09-30 11:54:55",
   "target_ids": [
     "gumus_kadife"
   ],
@@ -46,5 +46,5 @@
   "allow_all": false,
   "min_level": null,
   "max_level": null,
-  "visible_creatures": 0
+  "visible_creatures": 1
 }

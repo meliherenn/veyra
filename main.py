@@ -29,7 +29,7 @@ from config import (ROOT, POLL_INTERVAL, SELECT_TIMEOUT, HARVEST_START_TIMEOUT,
                     WARNING_CLOSE_WINDOW, LOG_MAX_BYTES, LOG_BACKUPS)
 from screen_detector import ScreenDetector
 from sound_alert import SoundAlert
-from state import HarvestTracker, ResumeGate
+from state import HarvestTracker, ResumeGate, StopRequested
 from fish_catalog import BY_ID,CATALOG,COLORS,DEFAULT_IDS,resolve_name,resolve_name_for_colors,resolve_requested
 from timing_store import TimingStore
 from profession import ProfessionController
@@ -37,10 +37,6 @@ from metrics import METRICS
 
 RUNTIME = ROOT / 'runtime'
 LOG = logging.getLogger('dwar')
-
-
-class StopRequested(Exception):
-    pass
 
 
 def bot_log_handler(path=None):
@@ -781,10 +777,16 @@ def main(argv=None):
         LOG.info('Durdurma komutu alındı.')
     except KeyboardInterrupt:
         LOG.info('Kullanıcı durdurdu.')
-    except Exception:
-        LOG.exception('Bot hata nedeniyle durdu. Fare işlemleri sona erdi.')
-        sound.play_once()
-        return 1
+    except Exception as exc:
+        if bot is not None and bot.stopping:
+            # Ctrl+C terminalin sinyalini alt süreçlere de verir; durdurma
+            # kuyruktayken gelen başka bir kesinti hata süsü vermemeli.
+            LOG.info('Durdurma sırasında beklenmeyen kesinti (%s); fare işlemleri sona erdi.',
+                     type(exc).__name__)
+        else:
+            LOG.exception('Bot hata nedeniyle durdu. Fare işlemleri sona erdi.')
+            sound.play_once()
+            return 1
     finally:
         sound.stop_alarm_loop()
         METRICS.save(RUNTIME/'metrics.json', force=True)

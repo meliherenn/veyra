@@ -5,6 +5,16 @@ from dataclasses import dataclass
 from config import RESUME_CLEAR_FRAMES, RESUME_CLEAR_SECONDS
 
 
+class StopRequested(Exception):
+    """F9/SIGTERM/Ctrl+C sonrası ana döngüyü temiz kesme sinyali.
+
+    main.py __main__ olarak çalışırken hunt.py gibi modüller `from main
+    import ...` yaptığında sınıfın ikinci bir kopyası oluşuyor ve iki kopya
+    birbirinin istisnasını yakalamıyordu (av modunda durma "Bot hata
+    nedeniyle durdu" süsü veriyordu). Tanım bu yüzden tek modülde durur.
+    """
+
+
 @dataclass
 class ResumeGate:
     latched: bool = False

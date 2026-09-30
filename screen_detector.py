@@ -172,10 +172,14 @@ class ScreenDetector:
             try:
                 # --oem 1 (LSTM tek basina): eski motor+kalitim birlesimi ~2 kat
                 # yavas; 15 kirpida anlam metni ayni kaldi, sure 320 -> 175 ms.
+                # Ayni oturumda calissin ki terminal Ctrl+C tesseract'i oldurup
+                # temiz durusu "Bot hata nedeniyle durdu" yapmasin: Python kendi
+                # SIGINT isleyicisiyle durur, OCR ise tamamlanir.
                 result = subprocess.run(["tesseract", str(path), "stdout", "-l", "tur+eng",
                                          "--psm", str(psm), "--oem", "1"], capture_output=True, text=True,
                                         check=True, timeout=OCR_TIMEOUT,
-                                        env=dict(os.environ,OMP_THREAD_LIMIT='1'))
+                                        env=dict(os.environ,OMP_THREAD_LIMIT='1'),
+                                        start_new_session=True)
             except subprocess.TimeoutExpired as exc:
                 raise InterruptedError('Ekran yazısı zamanında okunamadı; tıklamadan yeniden kontrol edilecek.') from exc
             text = normalized(result.stdout)

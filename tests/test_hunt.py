@@ -419,3 +419,15 @@ def test_dry_run_never_touches_the_mouse(mocked):
     mocked.tick()
     mocked.mouse.click.assert_not_called()
     mocked.mouse.scroll.assert_not_called()
+
+
+def test_stop_command_raises_the_shared_stoprequested(mocked):
+    """run.sh main.py'yi __main__ olarak çalıştırır, hunt.py ise `from main
+    import` ile ikinci modul kopyası yaratır. StopRequested tek sınıf olmalı
+    ki __main__'in except bloğu HuntBot'un kaldırdığı istisnayı yakalasın;
+    aksi halde F9/SIGTERM/Ctrl+C "Bot hata nedeniyle durdu" süsü verirdi."""
+    import state
+    assert main.StopRequested is state.StopRequested
+    mocked.desktop.commands.put('stop')
+    with pytest.raises(main.StopRequested):
+        mocked.control_guard()

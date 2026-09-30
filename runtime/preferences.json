@@ -16,5 +16,13 @@
   "mastery": -1,
   "energy_cycle": false,
   "auto_fish": "gok_mavisi_somon",
-  "auto_splinter": true
+  "auto_splinter": true,
+  "hunt_mode": false,
+  "hunt_all": false,
+  "hunt_creatures": [
+    "maharetli_fitsilya",
+    "krogan"
+  ],
+  "hunt_min": 0,
+  "hunt_max": 0
 }

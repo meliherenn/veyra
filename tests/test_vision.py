@@ -188,6 +188,22 @@ def test_ocr_timeout_is_retryable_without_returning_stale_text(detector,monkeypa
         detector.ocr(frame('green-map.png'))
 
 
+def test_tesseract_runs_in_its_own_session(detector,monkeypatch):
+    """Terminal Ctrl+C tesseract'ı öldürmemeli; Python kendi SIGINT
+    işleyicisiyle temiz durur, OCR çağrısı tamamlanır. Aynı oturumda
+    çalışsaydı CalledProcessError traceback'i "bot hata" süsü veriyordu."""
+    import subprocess
+    seen={}
+    def fake_run(cmd,**kwargs):
+        seen['kwargs']=kwargs
+        seen['cmd']=cmd
+        return subprocess.CompletedProcess(cmd,0,stdout='',stderr='')
+    monkeypatch.setattr(subprocess,'run',fake_run)
+    detector.ocr(frame('green-map.png'))
+    assert seen['cmd'][0]=='tesseract'
+    assert seen['kwargs'].get('start_new_session') is True
+
+
 def test_reacquire_fish_keeps_same_target_when_ring_is_visible(detector):
     f=frame('green-map.png');layout=detector.detect_layout(f)
     target=min(detector.find_fish_ripples(f,layout,target_color='yesil'),
