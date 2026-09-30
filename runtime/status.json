@@ -1,29 +1,25 @@
 {
-  "pid": 133346,
+  "pid": 107702,
   "running": false,
   "phase": "SEARCH",
   "paused": false,
   "protection_or_screen_wait": true,
-  "attempts": 5,
-  "completed_cycles": 3,
+  "attempts": 0,
+  "completed_cycles": 0,
   "scrolls": 0,
   "message": "Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.",
-  "updated_at": "2026-09-29 20:29:34",
+  "updated_at": "2026-09-30 11:41:14",
   "target_ids": [
-    "ay_sazani",
-    "felionlu_camca",
-    "gumus_kadife",
-    "gok_mavisi_somon"
+    "gumus_kadife"
   ],
-  "current_name": "Gök Mavisi Somon Balığı",
+  "current_name": "",
   "mastery": null,
-  "selection_mode": "name",
-  "colors": [],
+  "selection_mode": "color",
+  "colors": [
+    "yesil"
+  ],
   "active_fish_id": null,
-  "last_measurement": {
-    "fish_id": "ay_sazani",
-    "seconds": 9.89
-  },
+  "last_measurement": null,
   "elapsed_seconds": null,
   "expected_seconds": null,
   "energy": {
@@ -40,5 +36,15 @@
   "auto_cycles": 0,
   "auto_progress": null,
   "auto_total": null,
-  "splinter_recoveries": 0
+  "splinter_recoveries": 0,
+  "mode": "hunt",
+  "fights": 0,
+  "creatures": [
+    "Maharetli Fitsilya",
+    "Krogan"
+  ],
+  "allow_all": false,
+  "min_level": null,
+  "max_level": null,
+  "visible_creatures": 0
 }

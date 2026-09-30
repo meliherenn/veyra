@@ -529,8 +529,8 @@ class FishingBot:
             self.notice('Arama sürüyor; seçtiğiniz türlerden henüz balık bulunamadı.')
             self.last_fish = now
 
-    def status(self, running=True):
-        data = dict(pid=os.getpid(), running=running, phase=self.phase,
+    def status_data(self, running=True):
+        return dict(pid=os.getpid(), running=running, phase=self.phase,
                     paused=self.manual_pause, protection_or_screen_wait=self.gate.latched,
                     attempts=self.attempts, completed_cycles=self.cycles, scrolls=self.scrolls,
                     message=self.last_notice, updated_at=time.strftime('%Y-%m-%d %H:%M:%S'),
@@ -547,6 +547,9 @@ class FishingBot:
                     auto_progress=self.profession.auto_progress,
                     auto_total=self.profession.auto_total,
                     splinter_recoveries=self.profession.recoveries)
+
+    def status(self, running=True):
+        data = self.status_data(running)
         path = RUNTIME / 'status.tmp'
         path.write_text(json.dumps(data,ensure_ascii=False,indent=2))
         path.replace(RUNTIME / 'status.json')
@@ -591,6 +594,11 @@ def parse_args(argv=None):
     selection.add_argument('--fish',nargs='+',help='Bir veya birden fazla balık adı ya da kimliği')
     selection.add_argument('--colors',nargs='+',choices=list(COLORS),help='Bir veya birden fazla halka rengi')
     p.add_argument('--list-fish',action='store_true',help='İsimle seçilebilen balıkları listele')
+    p.add_argument('--hunt',action='store_true',help='Balık yerine Avlan yaratık avı modunu çalıştır')
+    p.add_argument('--creatures',nargs='+',help='Avlanacak yaratık adları ya da "all" (varsayılan: bilinen yaratıklar)')
+    p.add_argument('--min-level',type=int,help='Bu seviyenin altındaki yaratıklara saldırma')
+    p.add_argument('--max-level',type=int,help='Bu seviyenin üstündeki yaratıklara saldırma')
+    p.add_argument('--list-creatures',action='store_true',help='Bilinen yaratıkları listele')
     p.add_argument('--gui',action='store_true',help='Balık seçimi ve kontrol penceresini aç')
     p.add_argument('--dry-run', action='store_true', help='Sadece ekranı incele; fareyi kullanma')
     p.add_argument('--no-scroll', action='store_true', help='Haritada otomatik kaydırmayı kapat')
@@ -618,6 +626,10 @@ def parse_args(argv=None):
         p.error('Sınırlar negatif olamaz.')
     if args.mastery is not None and args.mastery<0:
         p.error('Ustalık negatif olamaz.')
+    if (args.min_level is not None and args.min_level<0) or (args.max_level is not None and args.max_level<0):
+        p.error('Seviye sınırı negatif olamaz.')
+    if args.min_level is not None and args.max_level is not None and args.min_level>args.max_level:
+        p.error('--min-level, --max-level değerinden büyük olamaz.')
     try:
         args.target_ids=resolve_requested(args.fish or DEFAULT_IDS)
         automatic = resolve_requested([args.auto_fish])
@@ -640,6 +652,11 @@ def main(argv=None):
     if args.list_fish:
         for fish in CATALOG:
             print(f'{fish.mastery:3}  {fish.name:<30} {fish.id}')
+        return 0
+    if args.list_creatures:
+        from hunt_catalog import KNOWN
+        for species in KNOWN:
+            print(f'{species.name:<24} {species.id}')
         return 0
     for command in ('stop','pause','resume','status'):
         if getattr(args,command):
@@ -686,6 +703,10 @@ def main(argv=None):
     if args.inspect:
         try:
             frame = np.array(Image.open(args.inspect).convert('RGB'))
+            if args.hunt:
+                from hunt import inspect_image
+                print(json.dumps(inspect_image(detector,frame,args.output),ensure_ascii=False,indent=2))
+                return 0
             obs = detector.observe(frame)
             fishes = detector.find_fish_ripples(frame,obs.layout) if obs.clear else []
             print(json.dumps(dict(observation=asdict(obs),fish=[asdict(f) for f in fishes]),ensure_ascii=False,indent=2))
@@ -718,13 +739,23 @@ def main(argv=None):
             if not args.no_focus and not args.dry_run:
                 desktop.focus_game()
             mouse = MouseController(desktop)
-            bot = FishingBot(desktop,detector,mouse,sound,args)
+            if args.hunt:
+                from hunt import HuntBot
+                bot = HuntBot(desktop,detector,mouse,sound,args)
+            else:
+                bot = FishingBot(desktop,detector,mouse,sound,args)
             for sig,command in ((signal.SIGTERM,'stop'),(signal.SIGINT,'stop'),
                                 (signal.SIGUSR1,'pause'),(signal.SIGUSR2,'resume')):
                 signal.signal(sig,lambda signum,frame,c=command: desktop.commands.put(c))
-            LOG.info('Hedefler: %s | F8: duraklat/devam | F9: durdur | kaydırma: %s',
-                     ', '.join(COLORS[i] for i in bot.selected_colors) if bot.selected_colors else
-                     ', '.join(BY_ID[i].name for i in bot.selected_ids),not args.no_scroll)
+            if args.hunt:
+                LOG.info('Yaratık avı: %s | seviye %s-%s | F8: duraklat/devam | F9: durdur | kaydırma: %s',
+                         'tümü' if bot.allow_all else ', '.join(s.name for s in bot.species),
+                         bot.min_level if bot.min_level is not None else '*',
+                         bot.max_level if bot.max_level is not None else '*',not args.no_scroll)
+            else:
+                LOG.info('Hedefler: %s | F8: duraklat/devam | F9: durdur | kaydırma: %s',
+                         ', '.join(COLORS[i] for i in bot.selected_colors) if bot.selected_colors else
+                         ', '.join(BY_ID[i].name for i in bot.selected_ids),not args.no_scroll)
             bot.status()
             start = time.monotonic()
             while True:
@@ -759,7 +790,8 @@ def main(argv=None):
         METRICS.save(RUNTIME/'metrics.json', force=True)
         if bot:
             bot.status(running=False)
-            LOG.info('Bitti. Toplama denemesi: %d | tamamlanan döngü: %d | kaydırma: %d',bot.attempts,bot.cycles,bot.scrolls)
+            LOG.info('Bitti. %s denemesi: %d | tamamlanan döngü: %d | kaydırma: %d',
+                     'Saldırı' if args.hunt else 'Toplama',bot.attempts,bot.cycles,bot.scrolls)
         detector.close()
         lock.close()
     return 0

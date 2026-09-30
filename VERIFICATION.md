@@ -394,3 +394,36 @@ Birim testleri: `test_widthwise_sea_band_stops_the_pointless_vertical_scroll`, `
 ### Açık nokta
 
 Kaydırma, paneldeki **Nehirde otomatik kaydır** kutucuğu kapalıysa (`--no-scroll`, şu an `auto_scroll: false`) hiç çalışmaz; yukarıdaki koruma kaydırma açıkken devreye girer. İkinci (mor) olta çantada hâlâ bulunamadı.
+
+## Yaratık avı: üst bilgi eşleşmesi düzeltmesi ve panelde av modu — 30 Eylül 2026
+
+`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q tests -p no:cacheprovider`: **250 geçti, 2 atlandı** (atlananlar daha önceki oturumlardan, ekran bağlılık testleri).
+
+### Saldırıyı tamamen engelleyen eşleşme hatası
+
+- Seçili yaratığın üst orta bilgi kutusunda adın yanında bir **ⓘ simgesi** var; tesseract bunu metne karıştırıp `'krogan od'` okuyor. Tam metin benzerliği 0,80 kaldığı için `header_verdict` her zaman False dönüyor, bot seçimden hemen sonra "Ad seçilen yaratıkla örtüşmüyor" deyip hedefi atlıyordu. **Canlıda hiçbir yaratığa saldırılamazdı.** Hata `tests/fixtures/hunt-selected.png` üzerinde birebir yeniden üretildi (`sim('krogan od','krogan') = 0.800 < 0.82`).
+- Düzeltme: `hunt_catalog.name_score()` artık benzerliği yalnızca tam metinle değil, metnin **ardışık kelime dizileriyle** de hesaplayıp en iyiyi alır; `match_species` ve `header_verdict` bu skoru kullanır. `'krogan od'` → `'krogan'` tokeni 1,0 verir. `'kirpi'` gibi yabancı adlar hâlâ eşleşmez (en iyi token skoru ~0,5).
+- Eşit skorlarda daha uzun (özgül) ad kazanır: havuzda `Krogan Muhafızı` da varken OCR `krogan muhafizi` okuyunca `krogan` onun yerine seçilmez. Regresyon testleri: `test_header_info_icon_noise_still_matches_the_species`, `test_equal_scores_prefer_the_more_specific_name`.
+
+### `--creatures all` modunda okunmayan etiket döngüsü
+
+- Etiketi OCR'lenemeyen yaratık 'all' modunda tıklanıyordu ama üst kutudaki ad boş hedef adıyla karşılaştırılıp doğrulama düşüyor, hedef atlanıyor; tek yaratıklı görünümlerde bu tıkla-atla döngüsü sürüyordu. Artık `allow_all` iken üst kutudaki ad hedefe işlenir ve saldırı onaylanır (`test_all_mode_adopts_the_header_name_for_unreadable_labels`). Katalog/azami seviye doğrulaması gibi güvenlik davranışları değişmedi.
+
+### Panele av modu (gui.py)
+
+- **Yaratık avı (Avlan) modu** kutucuğu ve AV HEDEFİ kartı eklendi: Tüm yaratıklar, bilinen tür kutucukları (Maharetli Fitsilya, Krogan), en az/en çok seviye (0 = Yok). Mod açıkken renk/balık tablosu, enerji, kıymık ve ustalık kontrolleri kilitlenir; kaydırma ile döngü/dakika sınırı her iki modda ortaktır.
+- `worker_command()` av modunda `run.sh --hunt --creatures … [--min-level …] [--max-level …]` kurar; boş seçim ValueError ile başlatmayı engeller.
+- Tercihler `hunt_mode`, `hunt_all`, `hunt_creatures`, `hunt_min`, `hunt_max` anahtarlarıyla `runtime/preferences.json`'a kaydedilir ve yeniden açılışta geri yüklenir.
+- Durum kartları av çalışmasında "Tamamlanan dövüş" / "Saldırı denemesi" metnine döner (status.json `mode: hunt`); enerji satırı "Yaratık avında enerji kullanılmaz." gösterir; başlat düğmesi "Avı başlat" olur.
+- Yeni GUI testleri: komut kurulumu (seçim/all/seviye), boş seçim hatası, balıkçılık kontrollerinin kilitlenip geri açılması ve tercih turu (restart round-trip).
+
+### Çevrimdışı ve canlı-tegelsiz doğrulama
+
+- Fixture analizi (`hunt.inspect_image`, `grabber=None`): `hunt-map` 12 yaratık (8 Maharetli + 4 Krogan, saldır düğmesi yok), `hunt-selected` saldır düğmesi + halka + "krogan" başlığı, `hunt-result` 'Ava' (1093, 54), `hunt-fight` harita/yok sonuç düğmesi yok.
+- `./run.sh --doctor` tamamen yeşil (paketler, Xlib, spectacle, tesseract, ydotool, soket, servis).
+- `./run.sh --hunt --dry-run --max-seconds 12`: odak çalınmadan, **sıfır fare girdisiyle** açıldı, "Oyun önde değil" beklemesinde kaldı, çıkış kodu 0; `runtime/status.json` `mode: hunt` ile yazıldı.
+
+### Açık noktalar
+
+- Av modu henüz gerçek oyunda canlı dövüşle denenmedi; tüm akış fixture + sahte oyun simülasyonuyla sınandı (seçim → saldır → dövüş → Ava). İlk canlı denemenin `--hunt --dry-run` ile başlaması önerilir.
+- Kataloğa yeni yaratık eklerken `hunt_catalog.KNOWN` listesi güncellenmeli; panel kutucukları bu listeden üretilir.

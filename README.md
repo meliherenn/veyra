@@ -71,6 +71,37 @@ Bot Koruması / Güvenlik Doğrulaması görüldüğünde fare ve kaydırma duru
 
 Yetersiz ustalık ve diğer beklenmeyen oyun pencereleri de çalışmayı bekletir. Hedefleri veya ustalık sınırını panelden değiştirebilirsiniz. İlgili meslek seçeneği açıkken tanınan enerji, kıymık ve alet uyarıları işlenir; bilinmeyen uyarılar kullanıcıyı bekler. Ekran yakalama, OCR veya fare komutu başarısız olursa eski görüntüyle tıklamaz.
 
+## Yaratık avı (Avlan)
+
+Haritada gezinen yaratıkları bulur, seçer, saldırır ve dövüş sonu penceresinden
+"Ava" ile haritaya döner. Balıkçılıktaki güvenlik katmanının hepsi geçerlidir:
+görünür fare, her girdiden önce taze ekranla doğrulama, F8/F9, odak kontrolü ve
+Bot Koruması çıkınca durup sizi bekleme (koruma ekranı asla aşılmaz).
+
+```bash
+./run.sh --hunt --dry-run                     # fare kullanmadan sadece ne gördüğünü yazar
+./run.sh --hunt                               # bilinen tüm yaratıklar
+./run.sh --hunt --creatures krogan            # yalnızca Krogan
+./run.sh --hunt --creatures "Yeni Canavar"    # kataloğda olmayan bir ad da verilebilir
+./run.sh --hunt --creatures all --max-level 6 # her yaratık, en fazla seviye 6
+./run.sh --hunt --max-cycles 50               # 50 dövüşten sonra dur
+./run.sh --hunt --inspect ekran.png --output isaretli.png   # çevrimdışı analiz
+```
+
+Panelden de avlanabilir: **Yaratık avı (Avlan) modu** kutucuğunu işaretleyin, av kartında yaratıkları ya da Tüm yaratıklar'ı ve isterseniz en az/en çok seviye sınırını seçin. Döngü/dakika sınırı ile kaydırma kutucuğu av modunda da geçerlidir; enerji ve kıymık seçenekleri yalnızca balıkçılıkta kullanılır. Mod seçimi panel kapatılıp açıldığında korunur.
+
+Akış: etiket (`Ad[seviye]`) bulunur ve OCR ile okunur -> yaratığın gövdesine tek
+tıklanır -> yeşil seçim halkası, sol üstte "saldır" düğmesi ve üst bilgi
+kutusundaki ad doğrulanır -> düğmeye basılır -> dövüş ekranı beklenir ->
+"İstatistikler" penceresinde "Ava" düğmesine basılır -> harita döner.
+Uygun yaratık kalmayınca harita aşağı/yukarı kaydırılır.
+
+Botun yanlış yaratığa saldırmaması için ad iki kez doğrulanır (haritadaki etiket
+ve seçimden sonra üst bilgi kutusu). Seçim doğrulanamazsa tıklama noktası sırayla
+değiştirilir (`HUNT_CLICK_DY_FALLBACKS`); art arda 4 başarısızlıkta bot alarm
+verip durur. Dövüş 90 sn içinde bitmezse de durur ve ekran görüntüsünü
+`runtime/last-pause.png` dosyasına kaydeder.
+
 ## Terminal seçenekleri
 
 ```bash
@@ -114,6 +145,8 @@ QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest -q tests
 Sistem bağımlılıkları: KDE KWin, `spectacle`, Türkçe/İngilizce verileriyle `tesseract`, `ydotool`, çalışan `ydotoold`, `python-dbus`, `python-gobject` ve ses oynatıcı (`paplay`, `pw-play` veya `aplay`). Kurulum sistem servis izinlerini veya fare ivmesini değiştirmez.
 
 ## Dosyalar
+
+`hunt.py` (yaratık avı döngüsü), `hunt_vision.py` (etiket, halka, düğme tanıma), `hunt_catalog.py` (yaratık adları).
 
 - `gui.py`: kontrol paneli ve tek süreç yönetimi.
 - `fish_catalog.py`, `timing_store.py`: türler, OCR eşleştirme, renkler, süreler.

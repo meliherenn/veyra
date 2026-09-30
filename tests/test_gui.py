@@ -101,3 +101,47 @@ def test_console_log_is_rotated_before_each_launch(panel):
     out.close()
     assert (panel.runtime / 'console.log.1').exists()
     assert path.stat().st_size == 0
+
+
+def test_hunt_mode_builds_the_creature_command(panel):
+    panel.hunt_mode.setChecked(True)
+    panel.hunt_checks['maharetli_fitsilya'].setChecked(False)
+    assert panel.worker_command()[1:]==['--hunt','--creatures','krogan']
+    panel.hunt_all.setChecked(True)
+    assert panel.worker_command()[1:]==['--hunt','--creatures','all']
+    panel.hunt_min.setValue(2);panel.hunt_max.setValue(6)
+    assert panel.worker_command()[1:]==['--hunt','--creatures','all','--min-level','2','--max-level','6']
+
+
+def test_hunt_mode_requires_a_creature(panel):
+    panel.hunt_mode.setChecked(True)
+    panel.hunt_all.setChecked(False)
+    for checkbox in panel.hunt_checks.values():checkbox.setChecked(False)
+    with pytest.raises(ValueError):panel.worker_command()
+
+
+def test_hunt_mode_shares_limits_and_restores_fishing_controls(panel):
+    panel.hunt_mode.setChecked(True)
+    assert not panel.table.isEnabled() and not panel.auto_splinter.isEnabled()
+    panel.cycle_limit.setValue(5);panel.auto_scroll.setChecked(False)
+    assert panel.worker_command()[1:]==['--hunt','--creatures','maharetli_fitsilya','krogan',
+                                        '--no-scroll','--max-cycles','5']
+    panel.hunt_mode.setChecked(False)
+    assert panel.table.isEnabled()
+    assert panel.worker_command()[1:]==['--colors','yesil','--no-scroll','--max-cycles','5']
+
+
+def test_hunt_preferences_survive_a_restart(tmp_path,app):
+    window=gui.ControlWindow(tmp_path,status_reader=lambda:{'running':False})
+    window.timer.stop();window.minimize.setChecked(False)
+    window.hunt_mode.setChecked(True);window.hunt_checks['krogan'].setChecked(False)
+    window.hunt_min.setValue(3)
+    window.save_preferences()
+    window.hide();window.deleteLater();app.processEvents()
+    reopened=gui.ControlWindow(tmp_path,status_reader=lambda:{'running':False})
+    reopened.timer.stop()
+    assert reopened.hunt_mode.isChecked()
+    assert not reopened.hunt_checks['krogan'].isChecked()
+    assert reopened.hunt_checks['maharetli_fitsilya'].isChecked()
+    assert reopened.hunt_min.value()==3
+    reopened.hide();reopened.deleteLater();app.processEvents()

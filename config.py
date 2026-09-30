@@ -80,3 +80,32 @@ AUTO_PANEL_PROBE_INTERVAL = 2.0
 # dosyaya kayar ve en eskisi silinir (bot.log ve console.log için ortak).
 LOG_MAX_BYTES = 2 * 1024 * 1024
 LOG_BACKUPS = 3
+
+# ---------------------------------------------------------------------------
+# Yaratık avı (Avlan). Ölçümler 1520 px genişliğindeki harita yerleşimine göre;
+# koddaki her boyut layout.width/1520 ile ölçeklenir.
+# ---------------------------------------------------------------------------
+# Yaratığın gövdesi, adının yazıldığı etiketin yaklaşık bu kadar piksel üstünde
+# (gerçek ekranda ölçüldü: etiket merkezi - halka merkezi = 37-38 px).
+HUNT_SPRITE_DY = -37
+# Seçim doğrulanamazsa sırayla denenen tıklama kaymaları (etikete göre, px).
+HUNT_CLICK_DY_FALLBACKS = (-37, -30, -44, 0)
+# Etiket yazısı halkadan daha parlaktır (V≈251, halka V≈221). Halkanın alt yayı
+# etiket sanılmasın diye alt sınır yüksek tutulur.
+HUNT_LABEL_MIN_V = 235
+HUNT_LABEL_MIN_S = 200
+# Saldır düğmesi şablonu (renkli eşleşme): yanlışlar <=0.63, doğru simge ~1.0.
+HUNT_ATTACK_TEMPLATE_THRESHOLD = 0.80
+# Etiket/başlık adı için bulanık eşleşme alt sınırı (OCR küçük harf hatası yapar).
+HUNT_NAME_MATCH_RATIO = 0.82
+# Saldır tıklamasından sonra harita hâlâ görünüyorsa saldırı başlamamış sayılır.
+HUNT_ENGAGE_TIMEOUT = 8.0
+# Dövüş ekranının sonuç penceresine dönüşmesi için beklenen en uzun süre.
+HUNT_FIGHT_TIMEOUT = 90.0
+# "Ava" düğmesine basıldıktan sonra harita dönmezse tıklamayı tekrarlama aralığı.
+HUNT_RETURN_RETRY = 2.5
+HUNT_RETURN_CLICK_LIMIT = 3
+# Art arda bu kadar seçim başarısızlığında bot alarm verip durur.
+HUNT_SELECT_FAILURES_BEFORE_PAUSE = 4
+# Seçilemeyen / saldırısı başlamayan yaratık bu süre yeniden denenmez.
+HUNT_AVOID_SECONDS = 25.0

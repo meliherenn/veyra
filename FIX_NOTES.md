@@ -72,3 +72,10 @@ Doğrulama: **200 test geçti** (194 → 200; yeniden deneme/temizlik için 6 ye
 - **Canlı ölçüm (o anki harita):** 1497×520 görünür alanda deniz satırı **106/520**, hepsi üstte bir şerit halinde → kaydırma **engellendi**. Kare `.tmp/sea_crop.png` olarak kaydedildi ve görsel olarak doğrulandı: su şeridi sol üstte, halkalar onun içinde, gerisi kara. İlk sürümde uçlardaki dağınık su pikselleri şeridi olduğundan şerit 430/520 sanılıyordu; sürekli-şerit ölçümü bu hatayı kapattı.
 
 Doğrulama: **210 test geçti** (204 → 210; deniz yönü 4, kurtarma1, panel1 yeni test). Ayrıntı `VERIFICATION.md` içinde.
+
+## v7 - Yaratık avı eşleşme düzeltmesi ve panelde av modu (30 Eylül)
+
+- **Saldırıyı engelleyen OCR gürültüsü düzeltildi.** Seçili yaratığın üst bilgi kutusundaki ⓘ simgesi OCR'e `od` diye karışıyordu; `krogan od` okuması 0,82 benzerlik eşiğini (0,80) geçemediği için bot seçtiği **her** yaratığı "Ad örtüşmüyor" diyerek atlıyordu. Yeni `hunt_catalog.name_score()` metnin ardışık kelime dizilerini de karşılaştırır; eşitlikte daha özgül (uzun) ad kazanır, yabancı adlar hâlâ elenir.
+- **`--creatures all` modunda okunmayan etiket döngüsü kapandı.** Etiketi okunamayan hedefin adı üst bilgi kutusundan hedefe işlenir; tıkla-atla döngüsü yerine saldırı onaylanır.
+- **Panele "Yaratık avı (Avlan) modu" eklendi.** Av kartında Tüm yaratıklar / bilinen türler ve en az-en çok seviye seçilir; mod açıkken balıkçılık kontrolleri kilitlenir, döngü/dakika sınırı ve kaydırma ortaktır. Tercihler `runtime/preferences.json`'da kalıcıdır; durum kartları av modunda dövüş metinlerine döner.
+- Doğrulama: **250 test geçti** (2 atlanan), `--doctor` yeşil, `--hunt --dry-run` girdisiz açılıp temiz kapandı. Av modunun ilk canlı dövüş denemesi yapılmadı; önce `--hunt --dry-run` önerilir. Ayrıntı `VERIFICATION.md` içinde.

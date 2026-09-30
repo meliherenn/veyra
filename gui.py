@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (QApplication,QMainWindow,QWidget,QLabel,QPushButt
 
 from config import ROOT
 from fish_catalog import CATALOG,BY_ID,COLORS,DEFAULT_IDS,name_key
+from hunt_catalog import KNOWN
 from timing_store import TimingStore
 from main import RUNTIME,read_status,rotate_log
 
@@ -99,6 +100,31 @@ class ControlWindow(QMainWindow):
         scroll_controls.setFrameShape(QFrame.Shape.NoFrame);scroll_controls.setWidget(left)
         sidebar=QVBoxLayout();sidebar.setSpacing(12);sidebar.addWidget(scroll_controls,1);body.addLayout(sidebar)
         controls.addWidget(label('HEDEF SEÇİMİ',muted=True))
+        self.hunt_mode=QCheckBox('Yaratık avı (Avlan) modu')
+        self.hunt_mode.setToolTip('İşaretliyken panel balık yerine haritadaki yaratıkları seçip saldırır.')
+        controls.addWidget(self.hunt_mode)
+        self.hunt_card=QFrame();self.hunt_card.setProperty('card',True)
+        hunt_layout=QVBoxLayout(self.hunt_card);hunt_layout.setContentsMargins(12,12,12,12);hunt_layout.setSpacing(8)
+        hunt_layout.addWidget(label('AV HEDEFİ',muted=True))
+        self.hunt_all=QCheckBox('Tüm yaratıklar')
+        self.hunt_all.setToolTip('Kataloğa bakılmaksızın haritadaki her yaratığa saldırır.')
+        hunt_layout.addWidget(self.hunt_all)
+        self.hunt_checks={}
+        hunt_grid=QGridLayout();hunt_grid.setSpacing(3)
+        for i,species in enumerate(KNOWN):
+            checkbox=QCheckBox(species.name);checkbox.setChecked(True)
+            self.hunt_checks[species.id]=checkbox;hunt_grid.addWidget(checkbox,i//2,i%2)
+        hunt_layout.addLayout(hunt_grid)
+        hunt_levels=QGridLayout()
+        hunt_levels.addWidget(label('En az seviye',muted=True),0,0);hunt_levels.addWidget(label('En çok seviye',muted=True),1,0)
+        self.hunt_min=QSpinBox();self.hunt_min.setRange(0,999);self.hunt_min.setSpecialValueText('Yok')
+        self.hunt_max=QSpinBox();self.hunt_max.setRange(0,999);self.hunt_max.setSpecialValueText('Yok')
+        self.hunt_min.setToolTip('Bu seviyenin altındaki yaratıklara saldırmaz.')
+        self.hunt_max.setToolTip('Bu seviyenin üstündeki yaratıklara saldırmaz.')
+        hunt_levels.addWidget(self.hunt_min,0,1);hunt_levels.addWidget(self.hunt_max,1,1)
+        hunt_layout.addLayout(hunt_levels)
+        self.hunt_card.setVisible(False)
+        controls.addWidget(self.hunt_card)
         self.by_color=QRadioButton('Renge göre');self.by_name=QRadioButton('Balık adına göre')
         self.mode_group=QButtonGroup(self);self.mode_group.addButton(self.by_color);self.mode_group.addButton(self.by_name)
         modes=QHBoxLayout();modes.addWidget(self.by_color);modes.addWidget(self.by_name);controls.addLayout(modes)
@@ -144,10 +170,11 @@ class ControlWindow(QMainWindow):
         note=label('Bot korumasında alarm verir.\nSen çözdükten sonra devam eder.\nPaneli kapatınca bot da durur.',muted=True)
         note.setWordWrap(True);action_layout.addWidget(note)
         right=QVBoxLayout();right.setSpacing(12);body.addLayout(right,1)
-        stats=QHBoxLayout();stats.setSpacing(10);self.stat_values={}
+        stats=QHBoxLayout();stats.setSpacing(10);self.stat_values={};self.stat_titles={}
         for key,title in [('cycles','Tamamlanan döngü'),('attempts','Toplama denemesi'),('last','Son ölçüm'),('scrolls','Kaydırma')]:
             frame=card();layout=QVBoxLayout(frame);layout.setContentsMargins(14,10,14,10)
-            layout.addWidget(label(title,muted=True));value=label('—',20);layout.addWidget(value);self.stat_values[key]=value;stats.addWidget(frame)
+            title_label=label(title,muted=True);layout.addWidget(title_label);value=label('—',20)
+            layout.addWidget(value);self.stat_values[key]=value;self.stat_titles[key]=title_label;stats.addWidget(frame)
         right.addLayout(stats)
         live=card();live_layout=QVBoxLayout(live);live_layout.setContentsMargins(14,11,14,11);live_layout.setSpacing(5)
         self.status_label=label('Hazır — hedefini seçip başlat.',13);self.status_label.setWordWrap(True);live_layout.addWidget(self.status_label)
@@ -176,6 +203,7 @@ class ControlWindow(QMainWindow):
         right.addWidget(label('CANLI GÜNLÜK',muted=True))
         self.log=QPlainTextEdit();self.log.setReadOnly(True);self.log.setMaximumBlockCount(400);self.log.setFixedHeight(113);right.addWidget(self.log)
         self.by_color.toggled.connect(self.selection_changed);self.by_name.toggled.connect(self.selection_changed)
+        self.hunt_mode.toggled.connect(self.hunt_toggled)
         self.table.itemChanged.connect(self.item_changed);self.search.textChanged.connect(self.filter_rows)
         self.clear_button.clicked.connect(self.clear_selection)
         self.all_button.clicked.connect(self.select_all)
@@ -204,6 +232,19 @@ class ControlWindow(QMainWindow):
         return {'mode':'color' if self.by_color.isChecked() else 'name',
                 'colors':[c for c,w in self.color_checks.items() if w.isChecked()],
                 'fish':[f.id for f in self.fishes if f.id in self.name_checked]}
+
+    def hunt_toggled(self,on):
+        """Avlan modunda balıkçılık seçimleri kilitlenir; av kartı görünür olur."""
+        if not hasattr(self,'table'):return
+        self.hunt_card.setVisible(on)
+        for widget in (self.by_color,self.by_name,self.energy_cycle,self.auto_fish,
+                       self.auto_splinter,self.mastery,self.table):
+            widget.setEnabled(not on)
+        for checkbox in self.color_checks.values():
+            checkbox.setEnabled(not on and self.by_color.isChecked())
+        if not on:
+            self.auto_fish.setEnabled(self.energy_cycle.isChecked())
+        self.selection_changed()
 
     def selection_changed(self,*args):
         if not hasattr(self,'table'):return
@@ -253,30 +294,50 @@ class ControlWindow(QMainWindow):
         index=self.auto_fish.findData(prefs.get('auto_fish','elmas_som'))
         self.auto_fish.setCurrentIndex(index if index>=0 else self.auto_fish.findData('elmas_som'))
         self.auto_fish.setEnabled(self.energy_cycle.isChecked())
+        self.hunt_all.setChecked(prefs.get('hunt_all',False))
+        chosen=set(prefs.get('hunt_creatures',[s.id for s in KNOWN]))
+        for sid,checkbox in self.hunt_checks.items():checkbox.setChecked(sid in chosen)
+        self.hunt_min.setValue(prefs.get('hunt_min',0));self.hunt_max.setValue(prefs.get('hunt_max',0))
+        self.hunt_mode.setChecked(prefs.get('hunt_mode',False))
+        self.hunt_toggled(self.hunt_mode.isChecked())
 
     def save_preferences(self):
         prefs=self.selection()|{'auto_scroll':self.auto_scroll.isChecked(),'minimize':self.minimize.isChecked(),
                                'max_cycles':self.cycle_limit.value(),'max_minutes':self.minute_limit.value(),
                                'mastery':self.mastery.value(), 'energy_cycle':self.energy_cycle.isChecked(),
-                               'auto_fish':self.auto_fish.currentData(),'auto_splinter':self.auto_splinter.isChecked()}
+                               'auto_fish':self.auto_fish.currentData(),'auto_splinter':self.auto_splinter.isChecked(),
+                               'hunt_mode':self.hunt_mode.isChecked(),'hunt_all':self.hunt_all.isChecked(),
+                               'hunt_creatures':[sid for sid,w in self.hunt_checks.items() if w.isChecked()],
+                               'hunt_min':self.hunt_min.value(),'hunt_max':self.hunt_max.value()}
         temp=self.runtime/'preferences.tmp';temp.write_text(json.dumps(prefs,ensure_ascii=False,indent=2))
         temp.replace(self.runtime/'preferences.json')
 
     def worker_command(self):
-        selection=self.selection()
-        targets=selection['colors'] if selection['mode']=='color' else selection['fish']
-        if not targets:raise ValueError('Başlatmak için en az bir renk veya balık seç.')
-        command=[str(self.root/'run.sh'),'--colors' if selection['mode']=='color' else '--fish',*targets]
-        if self.energy_cycle.isChecked():
-            fish=BY_ID[self.auto_fish.currentData()]
-            if self.mastery.value()>=0 and fish.mastery>self.mastery.value():
-                raise ValueError(f'{fish.name} için {fish.mastery} ustalık gerekiyor.')
-            command+=['--energy-cycle','--auto-fish',fish.id]
-        if not self.auto_splinter.isChecked():command.append('--no-auto-splinter')
+        if self.hunt_mode.isChecked():
+            command=[str(self.root/'run.sh'),'--hunt']
+            if self.hunt_all.isChecked():
+                command+=['--creatures','all']
+            else:
+                chosen=[sid for sid,w in self.hunt_checks.items() if w.isChecked()]
+                if not chosen:raise ValueError('Başlatmak için en az bir yaratık seç.')
+                command+=['--creatures',*chosen]
+            if self.hunt_min.value():command+=['--min-level',str(self.hunt_min.value())]
+            if self.hunt_max.value():command+=['--max-level',str(self.hunt_max.value())]
+        else:
+            selection=self.selection()
+            targets=selection['colors'] if selection['mode']=='color' else selection['fish']
+            if not targets:raise ValueError('Başlatmak için en az bir renk veya balık seç.')
+            command=[str(self.root/'run.sh'),'--colors' if selection['mode']=='color' else '--fish',*targets]
+            if self.energy_cycle.isChecked():
+                fish=BY_ID[self.auto_fish.currentData()]
+                if self.mastery.value()>=0 and fish.mastery>self.mastery.value():
+                    raise ValueError(f'{fish.name} için {fish.mastery} ustalık gerekiyor.')
+                command+=['--energy-cycle','--auto-fish',fish.id]
+            if not self.auto_splinter.isChecked():command.append('--no-auto-splinter')
+            if self.mastery.value()>=0:command+=['--mastery',str(self.mastery.value())]
         if not self.auto_scroll.isChecked():command.append('--no-scroll')
         if self.cycle_limit.value():command+=['--max-cycles',str(self.cycle_limit.value())]
         if self.minute_limit.value():command+=['--max-seconds',str(self.minute_limit.value()*60)]
-        if self.mastery.value()>=0:command+=['--mastery',str(self.mastery.value())]
         return command
 
     def start_worker(self):
@@ -345,7 +406,10 @@ class ControlWindow(QMainWindow):
         self.pause_button.setEnabled(running);self.stop_button.setEnabled(running or starting)
         self.start_button.setEnabled(not starting)
         self.pause_button.setText('Devam et' if state.get('paused') else 'Duraklat')
-        self.start_button.setText('Seçimi uygula ve başlat' if running else 'Toplamayı başlat')
+        hunt=state.get('mode')=='hunt' if running else self.hunt_mode.isChecked()
+        self.start_button.setText('Seçimi uygula ve başlat' if running else ('Avı başlat' if hunt else 'Toplamayı başlat'))
+        self.stat_titles['cycles'].setText('Tamamlanan dövüş' if hunt else 'Tamamlanan döngü')
+        self.stat_titles['attempts'].setText('Saldırı denemesi' if hunt else 'Toplama denemesi')
         if running:
             self.start_wait_until=0;self.status_label.setText(state.get('message') or 'Çalışıyor…')
         elif time.monotonic()>self.start_wait_until:
@@ -357,7 +421,10 @@ class ControlWindow(QMainWindow):
             self.stat_values[key].setText(str(state.get(field,0)))
         last=state.get('last_measurement');self.stat_values['last'].setText(f'{last["seconds"]:.1f} sn' if last else '—')
         energy=state.get('energy',{})
-        if energy.get('value') is not None:
+        if hunt:
+            self.energy_progress.setValue(0)
+            self.energy_text.setText('Yaratık avında enerji kullanılmaz.')
+        elif energy.get('value') is not None:
             self.energy_progress.setMaximum(energy.get('maximum',100));self.energy_progress.setValue(energy['value'])
             suffix=' · tahmini' if energy.get('estimated') else ' · oyundan okundu'
             if not running:suffix=' · son kayıt'
@@ -377,7 +444,9 @@ class ControlWindow(QMainWindow):
             self.progress_text.setText(f'{fish.name if fish else "Balık"} · otomatik toplama'+(f' · {value}/{total} sn' if value is not None and total else ' · ekran izleniyor'))
             self.progress.setValue(int(value/total*100) if value is not None and total else 0)
         else:
-            self.progress.setValue(0);self.progress_text.setText('Toplama başladığında kalan süre ve ölçüm burada görünür.')
+            self.progress.setValue(0)
+            self.progress_text.setText('Dövüş ve haritaya dönüş burada izlenir.' if hunt
+                                       else 'Toplama başladığında kalan süre ve ölçüm burada görünür.')
         self.timings.reload()
         summaries=self.timings.all_summaries()
         signature=json.dumps(summaries,sort_keys=True)
