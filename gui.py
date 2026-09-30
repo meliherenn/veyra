@@ -609,7 +609,12 @@ def run_gui():
         window.showNormal();window.raise_();window.activateWindow()
     server.newConnection.connect(show_existing)
     window.show()
-    result=app.exec()
+    try:
+        result=app.exec()
+    except KeyboardInterrupt:
+        # Terminalden Ctrl+C paneli öldürünce slot ortasındaki kesinti
+        # traceback süsü vermesin; tercih zaten kaydedilmiştir.
+        result=0
     server.close();QLocalServer.removeServer(server_name);lock.unlock()
     return result
 
