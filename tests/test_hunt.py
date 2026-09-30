@@ -141,6 +141,53 @@ def test_fight_and_result_screens_have_no_map_layout(detector):
     assert detector.detect_layout(frame('hunt-result.png')) is None
 
 
+# --------------------------------------------------- dövüş içi eylem düğmeleri
+def test_fight_toolbar_buttons_found_in_both_captures(vision):
+    """Sol araç çubuğu (provokasyon/binek/otomatik savaş) iki gerçek çekimde de
+    aynı piksel ölçeğindedir: konumlar ve dikey aralık birebir tutar. Çizili
+    fotoğraf (hunt-fight-toolbar) çizimler şablonu bozduğu için yalnızca
+    konum referansıdır, eşleşme testine girmez."""
+    for name in ('hunt-provoke-dialog.png', 'hunt-fight.png'):
+        f = frame(name)
+        provoke = vision.fight_button(f, 'provoke')
+        mount = vision.fight_button(f, 'mount')
+        auto = vision.fight_button(f, 'auto')
+        assert provoke and mount and auto, name
+        assert abs(provoke[0] - mount[0]) <= 3 and abs(mount[0] - auto[0]) <= 3, name
+        assert abs((mount[1] - provoke[1]) - 97) <= 3, name
+        assert abs((auto[1] - mount[1]) - 47) <= 3, name
+
+
+def test_map_screens_do_not_show_fight_buttons(vision):
+    for name in ('hunt-map.png', 'green-map.png', 'white-pond.png'):
+        f = frame(name)
+        assert vision.fight_button(f, 'provoke') is None, name
+        assert vision.fight_button(f, 'auto') is None, name
+
+
+def test_summon_bar_lists_only_unlocked_slots_in_order(vision):
+    f = frame('hunt-provoke-dialog.png')
+    slots, locks = vision.summon_slots(f)
+    assert len(locks) == 3
+    assert len(slots) == 2
+    xs = [s[0] for s in slots]
+    assert xs[0] < xs[1] < locks[0][0]
+    # Tıklama noktası kart gövdesine düşer (gerçek slot merkezleri ~397/475, 535).
+    assert abs(slots[0][0] - 397) <= 6 and abs(slots[0][1] - 535) <= 6
+    assert abs(slots[1][0] - 475) <= 6
+
+
+def test_counter_mask_reacts_to_digit_changes(vision):
+    f = frame('hunt-provoke-dialog.png')
+    slots, _locks = vision.summon_slots(f)
+    box = slots[0][2]
+    before = vision.counter_mask(f, box)
+    assert before is not None and before.any()
+    # Sayaç ilerlediğinde rakam pikselleri değişir; kaydırılmış kutu bunu temsil eder.
+    shifted = vision.counter_mask(f, (box[0] + 2, box[1], box[2], box[3]))
+    assert not (before == shifted).all()
+
+
 # --------------------------------------------------- sahte oyun (uçtan uca)
 class FakeGame:
     """Gerçek ekran görüntülerinden kurulan küçük oyun: harita -> seçim -> dövüş -> sonuç."""
@@ -431,3 +478,47 @@ def test_stop_command_raises_the_shared_stoprequested(mocked):
     mocked.desktop.commands.put('stop')
     with pytest.raises(main.StopRequested):
         mocked.control_guard()
+
+
+# ------------------------------------------------------ dövüş içi eylemler
+def test_fight_actions_click_provoke_summon_mount_then_auto(mocked):
+    bot = mocked
+    bot.provoke = bot.mount_summon = bot.auto_battle = True
+    bot.provoke_counts = [2]
+    positions = {'provoke': (50, 100), 'mount': (50, 197), 'auto': (50, 244)}
+    bot.vision.fight_button.side_effect = lambda frame, kind, threshold=None: positions[kind]
+    slot = (100, 200, (90, 226, 20, 8))
+    bot.vision.summon_slots.return_value = ([slot], [(300, 200)])
+    # Sayaç hiç değişmiyor: ikinci çağrıda jeton bitmiş sayılır, slot 1 tıklamada biter.
+    bot.vision.counter_mask.return_value = np.zeros((12, 24), np.uint8)
+    bot.args.dry_run = False
+    bot.perform_fight_actions()
+    assert bot.mouse.click.call_count == 4  # provoke + 1 çağırma + mount + auto
+    xs = [call.args[0] for call in bot.mouse.click.call_args_list]
+    assert xs == [50, 100, 50, 50]
+    assert bot.provoke_counts == [2]
+
+
+def test_fight_actions_run_once_per_fight(mocked, monkeypatch):
+    bot = mocked
+    bot.provoke = bot.mount_summon = bot.auto_battle = True
+    bot.fight_actions_done = False
+    performed = []
+    monkeypatch.setattr(bot, 'perform_fight_actions', lambda: performed.append(1))
+    obs = SimpleNamespace(blocked='Avlan haritası görünmüyor', layout=None)
+    bot.phase, bot.engaged_at = 'ENGAGED', main.time.monotonic()
+    bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, main.time.monotonic())
+    bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, main.time.monotonic())
+    assert performed == [1]
+
+
+def test_new_attack_rearms_fight_actions(mocked):
+    bot = mocked
+    bot.fight_actions_done = True
+    target = SimpleNamespace(x=400, y=400, label_x=400, label_y=437, width=50, height=9, color='yesil',
+                             name='krogan', level=4, species_id='krogan', radius=14)
+    bot.target, bot.phase, bot.since = target, 'SELECTING', 0
+    bot.vision.attack_button.return_value = (600, 214)
+    bot.vision.selected_name.return_value = 'krogan od'
+    bot.tick()
+    assert bot.attempts == 1 and bot.fight_actions_done is False

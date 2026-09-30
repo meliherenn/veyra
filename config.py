@@ -109,3 +109,17 @@ HUNT_RETURN_CLICK_LIMIT = 3
 HUNT_SELECT_FAILURES_BEFORE_PAUSE = 4
 # Seçilemeyen / saldırısı başlamayan yaratık bu süre yeniden denenmez.
 HUNT_AVOID_SECONDS = 25.0
+
+# Dövüş içi eylem düğmeleri (otomatik savaş / binek / provokasyon). Şablonlar
+# iki gerçek çekimde de aynı ölçekte doğrulandı: canlı skorlar 0.94-1.0,
+# yanlış pozitifler için boşluk bu yüzden geniş; eşik bilerek yüksek.
+HUNT_FIGHT_BUTTON_THRESHOLD = 0.90
+# Provokasyon tıklamasından sonra çağırma çubuğunun çıkmasını bekleme süresi.
+HUNT_PROVOKE_BAR_TIMEOUT = 6.0
+# Her çağırma tıklaması arasında oyunun animasyonu/sayacı işleme süresi.
+HUNT_SUMMON_CLICK_PAUSE = 1.2
+# Dövüş ekranı açıldıktan sonra düğmelere basmadan önce beklenen oturma süresi.
+HUNT_FIGHT_SETTLE_SECONDS = 1.0
+# Çağırma slotu: sayaç "kullanilan/limit" yazar; tıklama sonrası sayaç
+# pikselleri değişmezse (jeton bitti / sınır doldu) o slotta durulur.
+HUNT_SUMMON_MAX_PER_SLOT = 20

@@ -104,7 +104,8 @@ def test_console_log_is_rotated_before_each_launch(panel):
 
 
 def test_hunt_mode_builds_the_creature_command(panel):
-    panel.hunt_mode.setChecked(True)
+    panel.mode_hunt.setChecked(True)
+    panel.auto_battle_cb.setChecked(False);panel.mount_cb.setChecked(False);panel.provoke_cb.setChecked(False)
     panel.hunt_checks['maharetli_fitsilya'].setChecked(False)
     assert panel.worker_command()[1:]==['--hunt','--creatures','krogan']
     panel.hunt_all.setChecked(True)
@@ -113,20 +114,50 @@ def test_hunt_mode_builds_the_creature_command(panel):
     assert panel.worker_command()[1:]==['--hunt','--creatures','all','--min-level','2','--max-level','6']
 
 
+def test_custom_creatures_can_be_added_and_removed(panel):
+    panel.mode_hunt.setChecked(True)
+    panel.auto_battle_cb.setChecked(False);panel.mount_cb.setChecked(False);panel.provoke_cb.setChecked(False)
+    panel.hunt_input.setText('Ateş Kurbisi')
+    panel.hunt_add_creature()
+    key='ates_kurbisi'
+    assert key in panel.hunt_checks and panel.hunt_checks[key].isChecked()
+    panel.hunt_checks['maharetli_fitsilya'].setChecked(False)
+    assert panel.worker_command()[1:]==['--hunt','--creatures','krogan','Ateş Kurbisi']
+    panel.hunt_input.setText('Ateş Kurbisi')
+    panel.hunt_remove_creature()
+    assert key not in panel.hunt_checks
+    assert panel.worker_command()[1:]==['--hunt','--creatures','krogan']
+
+
+def test_fight_options_build_during_fight_flags(panel):
+    panel.mode_hunt.setChecked(True)
+    panel.hunt_all.setChecked(True)
+    panel.auto_battle_cb.setChecked(True);panel.mount_cb.setChecked(True)
+    panel.provoke_cb.setChecked(True)
+    for spin,value in zip(panel.provoke_spins,(3,2,0,0,0)):spin.setValue(value)
+    assert panel.worker_command()[1:]==['--hunt','--creatures','all','--auto-battle','--mount',
+                                        '--provoke','--provoke-counts','3,2,0,0,0']
+    # Provokasyon işaretli ama tüm adetler 0: başlatma reddedilir.
+    for spin in panel.provoke_spins:spin.setValue(0)
+    with pytest.raises(ValueError):panel.worker_command()
+
+
 def test_hunt_mode_requires_a_creature(panel):
-    panel.hunt_mode.setChecked(True)
+    panel.mode_hunt.setChecked(True)
+    panel.auto_battle_cb.setChecked(False);panel.mount_cb.setChecked(False);panel.provoke_cb.setChecked(False)
     panel.hunt_all.setChecked(False)
     for checkbox in panel.hunt_checks.values():checkbox.setChecked(False)
     with pytest.raises(ValueError):panel.worker_command()
 
 
 def test_hunt_mode_shares_limits_and_restores_fishing_controls(panel):
-    panel.hunt_mode.setChecked(True)
+    panel.mode_hunt.setChecked(True)
+    panel.auto_battle_cb.setChecked(False);panel.mount_cb.setChecked(False);panel.provoke_cb.setChecked(False)
     assert not panel.table.isEnabled() and not panel.auto_splinter.isEnabled()
     panel.cycle_limit.setValue(5);panel.auto_scroll.setChecked(False)
     assert panel.worker_command()[1:]==['--hunt','--creatures','maharetli_fitsilya','krogan',
                                         '--no-scroll','--max-cycles','5']
-    panel.hunt_mode.setChecked(False)
+    panel.mode_fishing.setChecked(True)
     assert panel.table.isEnabled()
     assert panel.worker_command()[1:]==['--colors','yesil','--no-scroll','--max-cycles','5']
 
@@ -134,14 +165,22 @@ def test_hunt_mode_shares_limits_and_restores_fishing_controls(panel):
 def test_hunt_preferences_survive_a_restart(tmp_path,app):
     window=gui.ControlWindow(tmp_path,status_reader=lambda:{'running':False})
     window.timer.stop();window.minimize.setChecked(False)
-    window.hunt_mode.setChecked(True);window.hunt_checks['krogan'].setChecked(False)
+    window.mode_hunt.setChecked(True);window.hunt_checks['krogan'].setChecked(False)
+    window.hunt_input.setText('Ateş Kurbisi');window.hunt_add_creature()
     window.hunt_min.setValue(3)
+    window.auto_battle_cb.setChecked(False);window.mount_cb.setChecked(True)
+    window.provoke_cb.setChecked(True)
+    for spin,value in zip(window.provoke_spins,(2,0,1,0,0)):spin.setValue(value)
     window.save_preferences()
     window.hide();window.deleteLater();app.processEvents()
     reopened=gui.ControlWindow(tmp_path,status_reader=lambda:{'running':False})
     reopened.timer.stop()
-    assert reopened.hunt_mode.isChecked()
+    assert reopened.mode_hunt.isChecked()
     assert not reopened.hunt_checks['krogan'].isChecked()
     assert reopened.hunt_checks['maharetli_fitsilya'].isChecked()
+    assert reopened.hunt_checks['ates_kurbisi'].isChecked() and reopened.hunt_checks['ates_kurbisi'].text()=='Ateş Kurbisi'
     assert reopened.hunt_min.value()==3
+    assert not reopened.auto_battle_cb.isChecked() and reopened.mount_cb.isChecked()
+    assert reopened.provoke_cb.isChecked()
+    assert [spin.value() for spin in reopened.provoke_spins]==[2,0,1,0,0]
     reopened.hide();reopened.deleteLater();app.processEvents()

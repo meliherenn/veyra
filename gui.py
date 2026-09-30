@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (QApplication,QMainWindow,QWidget,QLabel,QPushButt
 
 from config import ROOT
 from fish_catalog import CATALOG,BY_ID,COLORS,DEFAULT_IDS,name_key
-from hunt_catalog import KNOWN
+from hunt_catalog import KNOWN, slug
 from timing_store import TimingStore
 from main import RUNTIME,read_status,rotate_log
 
@@ -88,9 +88,11 @@ class ControlWindow(QMainWindow):
         container=QWidget();outer=QVBoxLayout(container);outer.setContentsMargins(24,20,24,20);outer.setSpacing(16)
         self.setCentralWidget(container)
         header=QHBoxLayout();title_box=QVBoxLayout();title_box.setSpacing(3)
-        eyebrow=label('EJDERHALAR MİRASI  /  MESLEK');eyebrow.setProperty('eyebrow',True)
-        title_box.addWidget(eyebrow);title_box.addWidget(label('Balıkçılık kontrolü',27))
-        title_box.addWidget(label('Renk ya da tür seç. Gerçek toplama sürelerini takip et.',muted=True))
+        eyebrow=label('EJDERHALAR MİRASI');eyebrow.setProperty('eyebrow',True)
+        title_box.addWidget(eyebrow)
+        self.mode_title=label('Balıkçılık kontrolü',27);title_box.addWidget(self.mode_title)
+        self.mode_subtitle=label('Renk ya da tür seç. Gerçek toplama sürelerini takip et.',muted=True)
+        title_box.addWidget(self.mode_subtitle)
         header.addLayout(title_box);header.addStretch()
         badge=label('F8  duraklat / devam     F9  durdur',muted=True);header.addWidget(badge)
         outer.addLayout(header)
@@ -99,10 +101,15 @@ class ControlWindow(QMainWindow):
         scroll_controls=QScrollArea();scroll_controls.setWidgetResizable(True);scroll_controls.setFixedWidth(295)
         scroll_controls.setFrameShape(QFrame.Shape.NoFrame);scroll_controls.setWidget(left)
         sidebar=QVBoxLayout();sidebar.setSpacing(12);sidebar.addWidget(scroll_controls,1);body.addLayout(sidebar)
-        controls.addWidget(label('HEDEF SEÇİMİ',muted=True))
-        self.hunt_mode=QCheckBox('Yaratık avı (Avlan) modu')
-        self.hunt_mode.setToolTip('İşaretliyken panel balık yerine haritadaki yaratıkları seçip saldırır.')
-        controls.addWidget(self.hunt_mode)
+        controls.addWidget(label('ÇALIŞMA MODU',muted=True))
+        mode_row=QHBoxLayout()
+        self.mode_fishing=QRadioButton('Meslek')
+        self.mode_fishing.setToolTip('Balıkçılık: nehirde balık toplar, enerji ve kıymık akışını yönetir.')
+        self.mode_hunt=QRadioButton('Avlan')
+        self.mode_hunt.setToolTip('Yaratık avı: haritada yaratık seçer, saldırır; dövüşte binek/otomatik savaş/provokasyon kullanabilir.')
+        self.work_group=QButtonGroup(self);self.work_group.addButton(self.mode_fishing);self.work_group.addButton(self.mode_hunt)
+        mode_row.addWidget(self.mode_fishing);mode_row.addWidget(self.mode_hunt)
+        controls.addLayout(mode_row)
         self.hunt_card=QFrame();self.hunt_card.setProperty('card',True)
         hunt_layout=QVBoxLayout(self.hunt_card);hunt_layout.setContentsMargins(12,12,12,12);hunt_layout.setSpacing(8)
         hunt_layout.addWidget(label('AV HEDEFİ',muted=True))
@@ -110,11 +117,20 @@ class ControlWindow(QMainWindow):
         self.hunt_all.setToolTip('Kataloğa bakılmaksızın haritadaki her yaratığa saldırır.')
         hunt_layout.addWidget(self.hunt_all)
         self.hunt_checks={}
-        hunt_grid=QGridLayout();hunt_grid.setSpacing(3)
+        self.hunt_grid=QGridLayout();self.hunt_grid.setSpacing(3)
         for i,species in enumerate(KNOWN):
             checkbox=QCheckBox(species.name);checkbox.setChecked(True)
-            self.hunt_checks[species.id]=checkbox;hunt_grid.addWidget(checkbox,i//2,i%2)
-        hunt_layout.addLayout(hunt_grid)
+            self.hunt_checks[species.id]=checkbox;self.hunt_grid.addWidget(checkbox,i//2,i%2)
+        hunt_layout.addLayout(self.hunt_grid)
+        self.hunt_input=QLineEdit();self.hunt_input.setPlaceholderText('Haritadaki yaratığın adını yaz…')
+        self.hunt_input.setToolTip('Her Avlan arayüzünde farklı yaratıklar olur. Adı yazıp Ekleyin; listede işaretlenebilir çıkar.')
+        add_row=QHBoxLayout()
+        add_row.addWidget(self.hunt_input,1)
+        self.hunt_add=QPushButton('Ekle');add_row.addWidget(self.hunt_add)
+        self.hunt_remove=QPushButton('Kaldır')
+        self.hunt_remove.setToolTip('Yazılan özel yaratığı listeden siler (katalog türleri silinemez).')
+        add_row.addWidget(self.hunt_remove)
+        hunt_layout.addLayout(add_row)
         hunt_levels=QGridLayout()
         hunt_levels.addWidget(label('En az seviye',muted=True),0,0);hunt_levels.addWidget(label('En çok seviye',muted=True),1,0)
         self.hunt_min=QSpinBox();self.hunt_min.setRange(0,999);self.hunt_min.setSpecialValueText('Yok')
@@ -123,8 +139,32 @@ class ControlWindow(QMainWindow):
         self.hunt_max.setToolTip('Bu seviyenin üstündeki yaratıklara saldırmaz.')
         hunt_levels.addWidget(self.hunt_min,0,1);hunt_levels.addWidget(self.hunt_max,1,1)
         hunt_layout.addLayout(hunt_levels)
+        hunt_layout.addWidget(label('DÖVÜŞ SEÇENEKLERİ',muted=True))
+        self.auto_battle_cb=QCheckBox('Otomatik savaş (yeşil kılıçlar)')
+        self.auto_battle_cb.setToolTip('Dövüş başlayınca sol araç çubuğundaki otomatik savaş düğmesine basar.')
+        hunt_layout.addWidget(self.auto_battle_cb)
+        self.mount_cb=QCheckBox('Binek çağır (kırmızı)')
+        self.mount_cb.setToolTip('Dövüş başlayınca binek düğmesine basar; binek sizinle savaşır.')
+        hunt_layout.addWidget(self.mount_cb)
+        self.provoke_cb=QCheckBox('Provokasyon (mor maske)')
+        self.provoke_cb.setToolTip('Dövüş başlayınca provokasyonu açıp seçtiğiniz adetlerde yaratık çağırır (jeton harcar).')
+        hunt_layout.addWidget(self.provoke_cb)
+        self.provoke_row=QWidget();provoke_layout=QHBoxLayout(self.provoke_row)
+        provoke_layout.setContentsMargins(0,0,0,0);provoke_layout.setSpacing(4)
+        provoke_layout.addWidget(label('Adetler',muted=True))
+        self.provoke_spins=[]
+        for slot in range(5):
+            spin=QSpinBox();spin.setRange(0,99);spin.setPrefix(f'{slot+1}. ')
+            spin.setToolTip(f'{slot+1}. slot (soldan) kaç yaratık çağrılsın. 0 = o slot boş geçilir.')
+            self.provoke_spins.append(spin);provoke_layout.addWidget(spin)
+        self.provoke_row.setVisible(False)
+        hunt_layout.addWidget(self.provoke_row)
+        provoke_note=label('Slot sırası çubuktaki kartların soldan sağa sırasıdır. '
+                           'Jeton biter ya da sınır dolarsa o slotta durulur.',muted=True)
+        provoke_note.setWordWrap(True);hunt_layout.addWidget(provoke_note)
         self.hunt_card.setVisible(False)
         controls.addWidget(self.hunt_card)
+        controls.addWidget(label('HEDEF SEÇİMİ',muted=True))
         self.by_color=QRadioButton('Renge göre');self.by_name=QRadioButton('Balık adına göre')
         self.mode_group=QButtonGroup(self);self.mode_group.addButton(self.by_color);self.mode_group.addButton(self.by_name)
         modes=QHBoxLayout();modes.addWidget(self.by_color);modes.addWidget(self.by_name);controls.addLayout(modes)
@@ -196,6 +236,7 @@ class ControlWindow(QMainWindow):
         for col,width in [(0,38),(2,96),(3,51),(4,100),(5,100),(6,47)]:self.table.setColumnWidth(col,width)
         self.table.setMinimumHeight(220)
         self.name_checked=set(DEFAULT_IDS)
+        self.hunt_custom=set()
         self._populate()
         right.addWidget(self.table,1)
         footer=label('Ekrandaki süreler başlangıç değerleridir; ölçülen ortalamalar her balık için ayrı güncellenir.\nİnsanlar / Magmarlar aynı tür altında gösterilir. Boş süreler ilk toplamada ölçülür.',muted=True)
@@ -203,7 +244,11 @@ class ControlWindow(QMainWindow):
         right.addWidget(label('CANLI GÜNLÜK',muted=True))
         self.log=QPlainTextEdit();self.log.setReadOnly(True);self.log.setMaximumBlockCount(400);self.log.setFixedHeight(113);right.addWidget(self.log)
         self.by_color.toggled.connect(self.selection_changed);self.by_name.toggled.connect(self.selection_changed)
-        self.hunt_mode.toggled.connect(self.hunt_toggled)
+        self.mode_hunt.toggled.connect(self.hunt_toggled)
+        self.provoke_cb.toggled.connect(lambda on:self.provoke_row.setVisible(on))
+        self.hunt_add.clicked.connect(self.hunt_add_creature)
+        self.hunt_remove.clicked.connect(self.hunt_remove_creature)
+        self.hunt_input.returnPressed.connect(self.hunt_add_creature)
         self.table.itemChanged.connect(self.item_changed);self.search.textChanged.connect(self.filter_rows)
         self.clear_button.clicked.connect(self.clear_selection)
         self.all_button.clicked.connect(self.select_all)
@@ -237,6 +282,7 @@ class ControlWindow(QMainWindow):
         """Avlan modunda balıkçılık seçimleri kilitlenir; av kartı görünür olur."""
         if not hasattr(self,'table'):return
         self.hunt_card.setVisible(on)
+        self.provoke_row.setVisible(on and self.provoke_cb.isChecked())
         for widget in (self.by_color,self.by_name,self.energy_cycle,self.auto_fish,
                        self.auto_splinter,self.mastery,self.table):
             widget.setEnabled(not on)
@@ -244,7 +290,36 @@ class ControlWindow(QMainWindow):
             checkbox.setEnabled(not on and self.by_color.isChecked())
         if not on:
             self.auto_fish.setEnabled(self.energy_cycle.isChecked())
+        self.mode_title.setText('Avlan kontrolü' if on else 'Balıkçılık kontrolü')
+        self.mode_subtitle.setText('Yaratıkları seç, dövüş seçeneklerini işaretle. Bot saldırır, dövüşü izler.'
+                                   if on else 'Renk ya da tür seç. Gerçek toplama sürelerini takip et.')
+        self.setWindowTitle('Ejderhalar Mirası · ' + ('Avlan Kontrolü' if on else 'Balıkçılık Kontrolü'))
         self.selection_changed()
+
+    def hunt_add_creature(self):
+        """Yazılan özel yaratığı listeye işaretlenebilir kutu olarak ekler."""
+        name=self.hunt_input.text().strip()
+        if not name:return
+        key=slug(name)
+        if not key or key in self.hunt_checks:
+            self.hunt_input.clear();return
+        checkbox=QCheckBox(name)
+        self.hunt_checks[key]=checkbox;self.hunt_custom.add(key)
+        count=self.hunt_grid.count()
+        self.hunt_grid.addWidget(checkbox,count//2,count%2)
+        checkbox.setChecked(True)
+        self.hunt_input.clear()
+
+    def hunt_remove_creature(self):
+        """Yazılan özel yaratığı listeden siler; katalog türleri kalır."""
+        name=self.hunt_input.text().strip()
+        key=slug(name) if name else ''
+        checkbox=self.hunt_checks.pop(key,None)
+        if checkbox is None or key not in self.hunt_custom:
+            return
+        self.hunt_custom.discard(key)
+        self.hunt_grid.removeWidget(checkbox);checkbox.deleteLater()
+        self.hunt_input.clear()
 
     def selection_changed(self,*args):
         if not hasattr(self,'table'):return
@@ -296,33 +371,65 @@ class ControlWindow(QMainWindow):
         self.auto_fish.setEnabled(self.energy_cycle.isChecked())
         self.hunt_all.setChecked(prefs.get('hunt_all',False))
         chosen=set(prefs.get('hunt_creatures',[s.id for s in KNOWN]))
-        for sid,checkbox in self.hunt_checks.items():checkbox.setChecked(sid in chosen)
+        for key,checkbox in list(self.hunt_checks.items()):checkbox.setChecked(key in chosen)
+        for name in prefs.get('hunt_custom',[]):
+            key=slug(str(name))
+            if key and key not in self.hunt_checks:
+                checkbox=QCheckBox(str(name))
+                self.hunt_checks[key]=checkbox;self.hunt_custom.add(key)
+                count=self.hunt_grid.count()
+                self.hunt_grid.addWidget(checkbox,count//2,count%2)
+                checkbox.setChecked(key in chosen)
         self.hunt_min.setValue(prefs.get('hunt_min',0));self.hunt_max.setValue(prefs.get('hunt_max',0))
-        self.hunt_mode.setChecked(prefs.get('hunt_mode',False))
-        self.hunt_toggled(self.hunt_mode.isChecked())
+        saved_counts=prefs.get('hunt_provoke_counts',[1,0,0,0,0])
+        for spin,value in zip(self.provoke_spins,list(saved_counts)+[0]*(5-len(saved_counts))):
+            spin.setValue(int(value))
+        self.auto_battle_cb.setChecked(prefs.get('hunt_auto_battle',True))
+        self.mount_cb.setChecked(prefs.get('hunt_mount',True))
+        self.provoke_cb.setChecked(prefs.get('hunt_provoke',True))
+        self.mode_fishing.setChecked(not prefs.get('hunt_mode',False))
+        self.mode_hunt.setChecked(prefs.get('hunt_mode',False))
+        self.hunt_toggled(self.mode_hunt.isChecked())
 
     def save_preferences(self):
         prefs=self.selection()|{'auto_scroll':self.auto_scroll.isChecked(),'minimize':self.minimize.isChecked(),
                                'max_cycles':self.cycle_limit.value(),'max_minutes':self.minute_limit.value(),
                                'mastery':self.mastery.value(), 'energy_cycle':self.energy_cycle.isChecked(),
                                'auto_fish':self.auto_fish.currentData(),'auto_splinter':self.auto_splinter.isChecked(),
-                               'hunt_mode':self.hunt_mode.isChecked(),'hunt_all':self.hunt_all.isChecked(),
-                               'hunt_creatures':[sid for sid,w in self.hunt_checks.items() if w.isChecked()],
-                               'hunt_min':self.hunt_min.value(),'hunt_max':self.hunt_max.value()}
+                               'hunt_mode':self.mode_hunt.isChecked(),'hunt_all':self.hunt_all.isChecked(),
+                               'hunt_creatures':[key for key,w in self.hunt_checks.items() if w.isChecked()],
+                               'hunt_custom':[next(cb.text() for k,cb in self.hunt_checks.items() if k==key)
+                                              for key in sorted(self.hunt_custom)],
+                               'hunt_min':self.hunt_min.value(),'hunt_max':self.hunt_max.value(),
+                               'hunt_auto_battle':self.auto_battle_cb.isChecked(),
+                               'hunt_mount':self.mount_cb.isChecked(),
+                               'hunt_provoke':self.provoke_cb.isChecked(),
+                               'hunt_provoke_counts':[spin.value() for spin in self.provoke_spins]}
         temp=self.runtime/'preferences.tmp';temp.write_text(json.dumps(prefs,ensure_ascii=False,indent=2))
         temp.replace(self.runtime/'preferences.json')
 
     def worker_command(self):
-        if self.hunt_mode.isChecked():
+        if self.mode_hunt.isChecked():
             command=[str(self.root/'run.sh'),'--hunt']
             if self.hunt_all.isChecked():
                 command+=['--creatures','all']
             else:
-                chosen=[sid for sid,w in self.hunt_checks.items() if w.isChecked()]
+                chosen=[key for key,w in self.hunt_checks.items() if w.isChecked()]
                 if not chosen:raise ValueError('Başlatmak için en az bir yaratık seç.')
-                command+=['--creatures',*chosen]
+                # Özel yaratıklar özgün adlarıyla gönderilir; katalog türleri kimlikle.
+                command+=['--creatures',*(self.hunt_checks[key].text() if key in self.hunt_custom
+                                          else key for key in chosen)]
             if self.hunt_min.value():command+=['--min-level',str(self.hunt_min.value())]
             if self.hunt_max.value():command+=['--max-level',str(self.hunt_max.value())]
+            if self.auto_battle_cb.isChecked():command.append('--auto-battle')
+            if self.mount_cb.isChecked():command.append('--mount')
+            if self.provoke_cb.isChecked():
+                counts=[spin.value() for spin in self.provoke_spins]
+                if not any(counts):
+                    raise ValueError('Provokasyon için en az bir slota çağırma adedi girin.')
+                command.append('--provoke')
+                if any(counts):
+                    command+=['--provoke-counts',','.join(str(c) for c in counts)]
         else:
             selection=self.selection()
             targets=selection['colors'] if selection['mode']=='color' else selection['fish']
@@ -406,7 +513,7 @@ class ControlWindow(QMainWindow):
         self.pause_button.setEnabled(running);self.stop_button.setEnabled(running or starting)
         self.start_button.setEnabled(not starting)
         self.pause_button.setText('Devam et' if state.get('paused') else 'Duraklat')
-        hunt=state.get('mode')=='hunt' if running else self.hunt_mode.isChecked()
+        hunt=state.get('mode')=='hunt' if running else self.mode_hunt.isChecked()
         self.start_button.setText('Seçimi uygula ve başlat' if running else ('Avı başlat' if hunt else 'Toplamayı başlat'))
         self.stat_titles['cycles'].setText('Tamamlanan dövüş' if hunt else 'Tamamlanan döngü')
         self.stat_titles['attempts'].setText('Saldırı denemesi' if hunt else 'Toplama denemesi')

@@ -427,3 +427,100 @@ Kaydırma, paneldeki **Nehirde otomatik kaydır** kutucuğu kapalıysa (`--no-sc
 
 - Av modu henüz gerçek oyunda canlı dövüşle denenmedi; tüm akış fixture + sahte oyun simülasyonuyla sınandı (seçim → saldır → dövüş → Ava). İlk canlı denemenin `--hunt --dry-run` ile başlaması önerilir.
 - Kataloğa yeni yaratık eklerken `hunt_catalog.KNOWN` listesi güncellenmeli; panel kutucukları bu listeden üretilir.
+
+## Canlı dövüş doğrulaması, Ctrl+C kapanışı, venv onarımı — 30 Eylül 2026 (2. tur)
+
+### Canlı dövüşler (kullanıcı koşusu, 11:47)
+
+`./run.sh --hunt --max-cycles 2`: iki saldırı, iki doğrulama (`Maharetli Fltsllya [4] doğrulandı`,
+`Kragan [4] doğrulandı` — üst bilgi ⓘ gürültüsü düzeltmesinin canlı kanıtı), 1 tamamlanan
+dövüş, "Ava" ile dönüş, ikinci hedefe geçiş. Akış canlıda uçtan uca çalıştı.
+
+### Ctrl+C / F9 temiz kapanışı
+
+- Belirti: Ctrl+C'de `CalledProcessError: tesseract died with SIGINT` + "Bot hata nedeniyle durdu".
+- Kök neden 1: terminal SIGINT'i tesseract alt sürecine de veriyor; `ocr()` artık
+  `start_new_session=True` ile çağırıyor (`test_tesseract_runs_in_its_own_session`).
+- Kök neden 2 (asıl): `main.py` `__main__` olarak çalışırken `hunt.py`'nin `from main import`
+  ile ikinci modul kopyası yaratması; `StopRequested` iki ayrı sınıf olunca av modunda
+  durma isteği `except Exception`'a düşüyordu. Sınıf `state.py`'ye taşındı
+  (`test_stop_command_raises_the_shared_stoprequested` sınıf kimliğini zorunlu tutar).
+- Doğrulama: süreç grubuna SIGINT → `Durdurma komutu alındı.` + `Bitti.` (Traceback 0);
+  `./run.sh --stop` (SIGTERM) aynı temiz yoldan çıktı. Dururken gelen başka istisna
+  artık hata süsü vermez, türü tek satırda yazılır.
+
+### Bozuk `.venv` onarımı
+
+- Belirti: `cv2` import edilemiyordu; `sys.prefix` venv yerine `/usr` gösteriyordu.
+- Neden: sistem Python güncellemesi venv'in site-packages bağını koparmış.
+- `./setup.sh` (uv) ile yeniden kuruldu; `--doctor` ve tüm paket importları yeşil.
+  Testler `PYTHONPATH=<venv>/site-packages` ile çalıştırıldı (geliştirme oturumu notu;
+  kullanıcının kendi terminalinde normal `./run.sh` yeterli).
+
+## Dövüş içi eylemler + birleşik panel — 30 Eylül 2026 (3. tur)
+
+Kullanıcı istekleri: dövüşte otomatik savaş (yeşil), binek (kırmızı), provokasyon (mor)
+düğmeleri; provokasyon çubuğundan slot başına kaç yaratık çağrılacağı; panelin tek
+arayüz olup açılışta Meslek/Avlan seçimi sunması; her haritada farklı yaratıklar
+olabildiği için tür eklenebilmesi.
+
+### Şablonlar iki gerçek çekimden çıkarıldı
+
+- Fotoğraflar fixture oldu: `hunt-fight-toolbar.png` (kullanıcı çizimli) ve
+  `hunt-provoke-dialog.png` (temiz, çağırma çubuğu açık). Çizimler şablonu bozduğu için
+  düğme şablonları **temiz ikinci çekimden** kesildi: `assets/hunt-{provoke,mount,auto}-button.png`.
+- `hunt-fight.png` (eski 1920 çekimi) ile ölçek farkı olmadığı kanıtlandı: üç düğme de
+  ölçek 1.0'da 0,947-0,969 skorla bulunur; dikey aralıklar (97/47 px) iki çekimde birebir.
+- Çağırma çubuğu: kilitli slotlar `assets/hunt-slot-lock.png` ile (0,80+ üç eşleşme,
+  merkezler tam slot merkezlerinde); açık slotlar sayacın **camgöbeği rakamlarından**
+  çıkarılır (teal maskesi; iki gerçek sayacın merkezleri ±2 px tuttu). Tıklama noktası
+  kart gövdesine düşer (sayaç merkezinden -10,-27).
+- Sayaç OCR'ı (20x8 px rakamlar) güvenilmez çıktı; yerine **piksel-farkı doğrulaması**:
+  tıklama sonrası teal maske değişmediyse jeton bitmiş/sınır dolmuş sayılır, slotta durulur.
+
+### Yeni görüntü API'si (hunt_vision.py)
+
+- `fight_button(frame, kind)` — provoke/mount/auto düğme merkezi; eşik 0,90
+  (`HUNT_FIGHT_BUTTON_THRESHOLD`), çok ölçekli (1.0/0.9/1.1) yedek.
+- `summon_slots(frame)` — (açık slotlar, kilitli merkezler), soldan sağa.
+- `counter_mask(frame, box)` — sayaç değişim kıyası için teal maskesi.
+- Not: `cv2.minMaxLoc` `(minVal, maxVal, …)` döndürür; ilk sürüm minVal'i skor sanıp
+  hep None döndürüyordu — test bunu yakaladı, maxVal okunacak şekilde düzeltildi.
+
+### Yeni akış (hunt.py + main.py)
+
+- `perform_fight_actions()`: dövüş ekranı oturunca bir kez — **provokasyon → binek →
+  otomatik savaş**. `fight_actions_done` her saldırıda sıfırlanır (dövüş başına tek deneme).
+- `run_provoke()`: düğme → çubuk bekleme (6 sn) → slot sırasına göre
+  `--provoke-counts` adetlerinde tıklama; her tıklama öncesi `summon_guard` (koruma +
+  odak + sonuç penceresi yok + slot hâlâ görünür), sonrası sayaç kıyası.
+- Her düğme tıklaması `fight_guard` ile taze karede yeniden doğrulanır; düğme
+  görünmüyorsa haber verilip dövüş normal izlenir (asla kilitlenmez). Dövüş 90 sn
+  zaman aşımı ve Bot Koruması kuralları aynen geçerli.
+- CLI: `--auto-battle`, `--mount`, `--provoke`, `--provoke-counts "3,2"` (0-99, en çok
+  5 slot; `--provoke` olmadan adet verilemez).
+
+### Birleşik panel (gui.py)
+
+- Sol üstte **ÇALIŞMA MODU: Meslek / Avlan** radyoları; Avlan seçilince başlık
+  "Avlan kontrolü"ne döner, balıkçılık kontrolleri kilitlenir, av kartı açılır. Mod tercihi
+  kalıcıdır (eski `hunt_mode` anahtarıyla uyumlu).
+- Av kartı: **Tüm yaratıklar**, bilinen tür kutuları, **özel yaratık ekle/kaldır**
+  (ad yaz → Ekle; tercihte kalıcı, komuta özgün adıyla gönderilir), en az/en çok seviye.
+- **DÖVÜŞ SEÇENEKLERİ:** üç kutu (varsayılan üçü de açık) + provokasyon için 5 slot
+  adedi (0 = o slot boş). Provokasyon işaretli ama tüm adetler 0 ise başlatma reddedilir.
+- Stat kartları/başlat düğmesi av modunda dövüş metinlerine döner (mevcut davranış korundu).
+
+### Testler ve doğrulama
+
+- **261 geçti, 2 atlandı.** Yeniler: düğme konum/aralık tutarlılığı (iki temiz çekim),
+  harita ekranlarında yanlış pozitif yok, çağırma slotu sırası/kilit dışlama/tıklama
+  noktası, sayaç maskesi değişim hassasiyeti, `minMaxLoc` regresyonu, eylem sırası
+  (provoke→çağır→binek→oto), dövüş başına tek deneme, yeni saldırının yeniden
+  silahlanması, özel yaratık ekle/kaldır + komut, dövüş bayrakları + adet doğrulaması,
+  tercih turu (özel tür ve adetler dahil).
+- `--hunt --provoke --provoke-counts 3,2 --auto-battle --mount --dry-run` girdisiz açılıp
+  temiz kapandı; panel her iki modda offscreen render ile görsel olarak doğrulandı.
+- Açık nokta: dövüş içi eylemler gerçek oyunda canlı deneme bekliyor (şablonlar ve
+  akış iki gerçek çekim + simülasyonla sınandı). İlk canlı denemede jeton bakiyesine
+  dikkat: her çağrı jeton harcar.

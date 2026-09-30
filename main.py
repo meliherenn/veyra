@@ -595,6 +595,10 @@ def parse_args(argv=None):
     p.add_argument('--min-level',type=int,help='Bu seviyenin altındaki yaratıklara saldırma')
     p.add_argument('--max-level',type=int,help='Bu seviyenin üstündeki yaratıklara saldırma')
     p.add_argument('--list-creatures',action='store_true',help='Bilinen yaratıkları listele')
+    p.add_argument('--auto-battle',action='store_true',help='Dövüş başlayınca otomatik savaş düğmesine bas')
+    p.add_argument('--mount',action='store_true',help='Dövüş başlayınca binek çağır')
+    p.add_argument('--provoke',action='store_true',help='Dövüş başlayınca provokasyonla yaratık çağır')
+    p.add_argument('--provoke-counts',default='',help='Slot başına çağırma adedi, soldan sağa: "3,2" gibi')
     p.add_argument('--gui',action='store_true',help='Balık seçimi ve kontrol penceresini aç')
     p.add_argument('--dry-run', action='store_true', help='Sadece ekranı incele; fareyi kullanma')
     p.add_argument('--no-scroll', action='store_true', help='Haritada otomatik kaydırmayı kapat')
@@ -626,6 +630,16 @@ def parse_args(argv=None):
         p.error('Seviye sınırı negatif olamaz.')
     if args.min_level is not None and args.max_level is not None and args.min_level>args.max_level:
         p.error('--min-level, --max-level değerinden büyük olamaz.')
+    try:
+        args.provoke_counts = [int(part) for part in args.provoke_counts.split(',') if part.strip()]
+    except ValueError:
+        p.error('--provoke-counts virgülle ayrılmış sayılar olmalı: "3,2" gibi.')
+    if any(n < 0 or n > 99 for n in args.provoke_counts):
+        p.error('--provoke-counts adetleri 0-99 arasında olmalı.')
+    if args.provoke_counts and not args.provoke:
+        p.error('--provoke-counts için --provoke gerekiyor.')
+    if len(args.provoke_counts) > 5:
+        p.error('En fazla 5 çağırma slotu vardır.')
     try:
         args.target_ids=resolve_requested(args.fish or DEFAULT_IDS)
         automatic = resolve_requested([args.auto_fish])

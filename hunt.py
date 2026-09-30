@@ -17,7 +17,9 @@ from config import (POLL_INTERVAL, SELECT_TIMEOUT, TARGET_RETRY_SECONDS, NO_FISH
                     TRANSIENT_BLOCK_FRAMES, RESUME_FAST_SECONDS, WARNING_CLOSE_INTERVAL,
                     HUNT_SPRITE_DY, HUNT_CLICK_DY_FALLBACKS, HUNT_ENGAGE_TIMEOUT,
                     HUNT_FIGHT_TIMEOUT, HUNT_RETURN_RETRY, HUNT_RETURN_CLICK_LIMIT,
-                    HUNT_SELECT_FAILURES_BEFORE_PAUSE, HUNT_AVOID_SECONDS)
+                    HUNT_SELECT_FAILURES_BEFORE_PAUSE, HUNT_AVOID_SECONDS,
+                    HUNT_PROVOKE_BAR_TIMEOUT, HUNT_SUMMON_CLICK_PAUSE,
+                    HUNT_FIGHT_SETTLE_SECONDS, HUNT_SUMMON_MAX_PER_SLOT)
 from hunt_catalog import KNOWN, match_species, name_score, resolve_requested
 from hunt_vision import HuntVision
 from main import FishingBot
@@ -37,6 +39,12 @@ class HuntBot(FishingBot):
         self.species_ids = {s.id for s in self.species}
         self.min_level = getattr(args, 'min_level', None)
         self.max_level = getattr(args, 'max_level', None)
+        # Dövüş içi eylemler: provokasyonla yaratık çağırma, binek, otomatik savaş.
+        self.provoke = bool(getattr(args, 'provoke', False))
+        self.mount_summon = bool(getattr(args, 'mount_summon', False))
+        self.auto_battle = bool(getattr(args, 'auto_battle', False))
+        self.provoke_counts = [int(n) for n in (getattr(args, 'provoke_counts', None) or [])]
+        self.fight_actions_done = False
         self.fights = 0
         self.select_failures = 0
         self.dy_index = 0
@@ -253,6 +261,15 @@ class HuntBot(FishingBot):
                 self.block(f'Dövüş {HUNT_FIGHT_TIMEOUT:.0f} sn içinde bitmedi. '
                            'Ekranı kontrol edip F8 ile devam edin.', frame)
                 return
+            if not self.fight_actions_done and (self.provoke or self.mount_summon
+                                                or self.auto_battle):
+                self.fight_actions_done = True
+                if self.args.dry_run:
+                    self.notice('Önizleme: dövüş eylemleri (provokasyon/binek/otomatik '
+                                'savaş) dry-run\'da kullanılmıyor.')
+                else:
+                    self.perform_fight_actions()
+                    return
             self.notice(f'Dövüş sürüyor ({waited:.0f} sn); sonuç ekranı bekleniyor.')
             return
         # Dövüş dışında harita görünmüyor: kullanıcı başka bir ekrana geçmiş olabilir.
@@ -261,6 +278,120 @@ class HuntBot(FishingBot):
             return
         self.block(obs.blocked or 'Avlan haritası görünmüyor.', frame,
                    alarm=False, seconds=RESUME_FAST_SECONDS)
+
+    # -------------------------------------------------------- dövüş içi eylemler
+    def fight_guard(self, kind, point):
+        """Dövüş düğmesi tıklamasından hemen önce: koruma, odak, düğme hâlâ yerinde mi?"""
+        self.control_guard()
+        if not self.desktop.is_game_active():
+            raise InterruptedError('Oyun odaktan çıktı; dövüş eylemi iptal edildi.')
+        fresh = self.detector.capture()
+        protected, reason = self.detector.check_bot_protection(fresh)
+        if protected:
+            self.block(reason or 'Bot koruması.', fresh)
+            raise InterruptedError('Bot koruması; dövüş eylemi iptal edildi.')
+        current = self.vision.fight_button(fresh, kind)
+        if not current or math.dist(current, point) > 6:
+            raise InterruptedError(f'{kind} düğmesi son kontrolde görünmedi.')
+        self.control_guard()
+
+    def summon_guard(self, point):
+        """Çağırma tıklamasından önce: koruma/odak ve slota hâlâ erişilebiliyor mu?"""
+        self.control_guard()
+        if not self.desktop.is_game_active():
+            raise InterruptedError('Oyun odaktan çıktı; çağırma iptal edildi.')
+        fresh = self.detector.capture()
+        protected, reason = self.detector.check_bot_protection(fresh)
+        if protected:
+            self.block(reason or 'Bot koruması.', fresh)
+            raise InterruptedError('Bot koruması; çağırma iptal edildi.')
+        if self.vision.result_button(fresh, self.scale_hint):
+            raise InterruptedError('Dövüş çağırma bitmeden bitti; çağırma durduruldu.')
+        slots, _locks = self.vision.summon_slots(fresh)
+        if not any(math.dist((x, y), point) <= 10 for x, y, _box in slots):
+            raise InterruptedError('Çağırma slotu son kontrolde görünmedi.')
+        self.control_guard()
+
+    def click_fight_button(self, frame, kind, message):
+        """Dövüş içi düğmeye koruma ile bas; düğme yoksa haber verip geç."""
+        button = self.vision.fight_button(frame, kind)
+        if not button:
+            self.notice(f'{kind} düğmesi ekranda görünmüyor; atlandı.')
+            return False
+        self.mouse.click(*self.pixel_to_desktop(button, frame),
+                         before_click=lambda: self.fight_guard(kind, button))
+        METRICS.bump(f'fight_{kind}')
+        self.notice(message)
+        return True
+
+    def perform_fight_actions(self):
+        """Dövüş başladıktan sonra bir kez: provokasyon -> binek -> otomatik savaş."""
+        time.sleep(HUNT_FIGHT_SETTLE_SECONDS)
+        frame = self.detector.capture()
+        if self.provoke:
+            try:
+                self.run_provoke(frame)
+            except InterruptedError as error:
+                self.notice(f'Provokasyon yarıda kaldı: {error}')
+                frame = self.detector.capture()
+        if self.mount_summon:
+            self.click_fight_button(frame, 'mount', 'Binek çağırılıyor.')
+            frame = self.detector.capture()
+        if self.auto_battle:
+            self.click_fight_button(frame, 'auto', 'Otomatik savaş açılıyor.')
+
+    def run_provoke(self, frame):
+        """Provokasyonu aç, çağırma çubuğunu bekle, slot sırasına göre çağır.
+
+        Her tıklamadan önce slot yeniden doğrulanır; tıklama sonrası sayacın
+        camgöbeği rakamları değişmediyse (jeton bitti / sınır doldu) o slot
+        bitirilir. Dövüş biterse kalan çağrılar atlanır.
+        """
+        if not self.click_fight_button(frame, 'provoke',
+                                       'Provokasyon açılıyor; çağırma çubuğu bekleniyor.'):
+            return
+        deadline = time.monotonic() + HUNT_PROVOKE_BAR_TIMEOUT
+        slots = []
+        while time.monotonic() < deadline:
+            fresh = self.detector.capture()
+            slots, _locks = self.vision.summon_slots(fresh)
+            if slots:
+                break
+            time.sleep(0.5)
+        if not slots:
+            self.notice('Çağırma çubuğu açılmadı; provokasyon atlandı.')
+            return
+        self.notice(f'Çağırma çubuğu açık: {len(slots)} slot. Sıra: '
+                    + ', '.join(str(self.provoke_counts[i] if i < len(self.provoke_counts) else 0)
+                                for i in range(len(slots))) + '.')
+        for index in range(len(slots)):
+            wanted = self.provoke_counts[index] if index < len(self.provoke_counts) else 0
+            wanted = max(0, min(wanted, HUNT_SUMMON_MAX_PER_SLOT))
+            if not wanted:
+                continue
+            anchor_x = slots[index][0]
+            previous_mask = None
+            summoned = 0
+            while summoned < wanted:
+                fresh = self.detector.capture()
+                current, _locks = self.vision.summon_slots(fresh)
+                slot = next((s for s in current if abs(s[0] - anchor_x) <= 10), None)
+                if slot is None:
+                    self.notice('Çağırma çubuğu kapandı; kalan çağrılar atlandı.')
+                    return
+                mask = self.vision.counter_mask(fresh, slot[2])
+                if previous_mask is not None and mask is not None and np.array_equal(mask, previous_mask):
+                    self.notice(f'{index + 1}. slotta sayaç değişmedi; jeton bitmiş ya da '
+                                'sınır dolmuş olabilir. Kalan çağrılar atlandı.')
+                    break
+                self.mouse.click(*self.pixel_to_desktop((slot[0], slot[1]), fresh),
+                                 before_click=lambda p=(slot[0], slot[1]): self.summon_guard(p))
+                summoned += 1
+                previous_mask = mask
+                METRICS.bump('summon')
+                time.sleep(HUNT_SUMMON_CLICK_PAUSE)
+            if summoned:
+                self.notice(f'{index + 1}. slottan {summoned} yaratık çağrıldı.')
 
     def finish_fight(self, frame, button, now):
         if self.args.dry_run:
@@ -299,6 +430,7 @@ class HuntBot(FishingBot):
                 self.attempts += 1
                 self.phase, self.since = 'ENGAGED', time.monotonic()
                 self.engaged_at = self.since
+                self.fight_actions_done = False
                 self.note_selection_success()
                 self.notice(f'{self.target.name.title()} [{self.target.level}] doğrulandı; saldırılıyor ({self.attempts}).')
                 return
@@ -377,7 +509,9 @@ class HuntBot(FishingBot):
         data = super().status_data(running)
         data.update(mode='hunt', fights=self.fights, creatures=[s.name for s in self.species],
                     allow_all=self.allow_all, min_level=self.min_level, max_level=self.max_level,
-                    visible_creatures=self.last_labels, current_name=self.current_name)
+                    visible_creatures=self.last_labels, current_name=self.current_name,
+                    provoke=self.provoke, mount=self.mount_summon, auto_battle=self.auto_battle,
+                    provoke_counts=self.provoke_counts)
         return data
 
 

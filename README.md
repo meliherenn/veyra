@@ -88,7 +88,26 @@ Bot Koruması çıkınca durup sizi bekleme (koruma ekranı asla aşılmaz).
 ./run.sh --hunt --inspect ekran.png --output isaretli.png   # çevrimdışı analiz
 ```
 
-Panelden de avlanabilir: **Yaratık avı (Avlan) modu** kutucuğunu işaretleyin, av kartında yaratıkları ya da Tüm yaratıklar'ı ve isterseniz en az/en çok seviye sınırını seçin. Döngü/dakika sınırı ile kaydırma kutucuğu av modunda da geçerlidir; enerji ve kıymık seçenekleri yalnızca balıkçılıkta kullanılır. Mod seçimi panel kapatılıp açıldığında korunur.
+Panelden de avlanabilir: soldaki **ÇALIŞMA MODU**'ndan **Avlan**'ı seçin — panel
+başlığı ve seçimler av arayüzüne döner. Av kartında:
+
+- **Av hedefi:** bilinen yaratıkların kutuları; her Avlan arayüzünde farklı
+  yaratıklar olabileceğinden adını yazıp **Ekle** ile yeni tür ekleyebilirsiniz
+  (özel türler tercihlerde kalıcıdır, **Kaldır** ile silinir). **Tüm yaratıklar**
+  işaretlenirse katalog dışı adlar da saldırılır. En az/en çok seviye sınırı
+  uygulanır.
+- **Dövüş seçenekleri** (üçü de işaretli gelir, tek tek kapatılabilir):
+  - **Otomatik savaş (yeşil kılıçlar):** dövüş başlayınca sol araç çubuğundaki
+    otomatik savaş düğmesine basar.
+  - **Binek çağır (kırmızı):** dövüş başlayınca bineği savaşa sokar.
+  - **Provokasyon (mor maske):** dövüş başlayınca provokasyonu açar ve alttaki
+    çağırma çubuğunda **soldan sağa** slot sırasına göre yazdığınız adetlerde
+    yaratık çağırır (jeton harcar). Tıklamadan önce slot ve koruma taze kareyle
+    doğrulanır; sayaç rakamları değişmezse (jeton bitti / sınır doldu) o slotta
+    durulur, dövüş biterse kalan çağrılar atlanır.
+
+Dövüş içi sıra: **provokasyon → binek → otomatik savaş**; her dövüş için bir kez
+denenir, düğmeler görünmezse haber verilip dövüş yine izlenir.
 
 Akış: etiket (`Ad[seviye]`) bulunur ve OCR ile okunur -> yaratığın gövdesine tek
 tıklanır -> yeşil seçim halkası, sol üstte "saldır" düğmesi ve üst bilgi
@@ -97,7 +116,8 @@ kutusundaki ad doğrulanır -> düğmeye basılır -> dövüş ekranı beklenir 
 Uygun yaratık kalmayınca harita aşağı/yukarı kaydırılır.
 
 Botun yanlış yaratığa saldırmaması için ad iki kez doğrulanır (haritadaki etiket
-ve seçimden sonra üst bilgi kutusu). Seçim doğrulanamazsa tıklama noktası sırayla
+ve seçimden sonra üst bilgi kutusu; kutudaki ⓘ simgesinin OCR gürültüsü
+tolere edilir). Seçim doğrulanamazsa tıklama noktası sırayla
 değiştirilir (`HUNT_CLICK_DY_FALLBACKS`); art arda 4 başarısızlıkta bot alarm
 verip durur. Dövüş 90 sn içinde bitmezse de durur ve ekran görüntüsünü
 `runtime/last-pause.png` dosyasına kaydeder.

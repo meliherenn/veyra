@@ -79,3 +79,23 @@ Doğrulama: **210 test geçti** (204 → 210; deniz yönü 4, kurtarma1, panel1 
 - **`--creatures all` modunda okunmayan etiket döngüsü kapandı.** Etiketi okunamayan hedefin adı üst bilgi kutusundan hedefe işlenir; tıkla-atla döngüsü yerine saldırı onaylanır.
 - **Panele "Yaratık avı (Avlan) modu" eklendi.** Av kartında Tüm yaratıklar / bilinen türler ve en az-en çok seviye seçilir; mod açıkken balıkçılık kontrolleri kilitlenir, döngü/dakika sınırı ve kaydırma ortaktır. Tercihler `runtime/preferences.json`'da kalıcıdır; durum kartları av modunda dövüş metinlerine döner.
 - Doğrulama: **250 test geçti** (2 atlanan), `--doctor` yeşil, `--hunt --dry-run` girdisiz açılıp temiz kapandı. Av modunun ilk canlı dövüş denemesi yapılmadı; önce `--hunt --dry-run` önerilir. Ayrıntı `VERIFICATION.md` içinde.
+
+## v8 - Temiz durdurma, dövüş içi eylemler ve birleşik panel (30 Eylül)
+
+- **Ctrl+C / F9 artık hep temiz kapanıyor.** İki kök neden çözüldü: tesseract kendi
+  oturumunda çalışıyor (terminal sinyali onu öldürmüyor) ve `StopRequested` tek sınıf
+  olarak `state.py`'ye taşındı — `main.py __main__` + `from main import` kopya sınıfı
+  yüzünden av modunda durma isteği "Bot hata nedeniyle durdu" süsü veriyordu.
+- **Dövüş içi eylemler.** Dövüş başlayınca bot bir kez: provokasyonu açıp çağırma
+  çubuğundan slot sırasına göre istenen adetlerde yaratık çağırır, bineği çağırır,
+  otomatik savaşı açar. Üç düğme şablonla bulunur (iki gerçek çekimde 0,94-1,0 skor);
+  çağırma sayacı piksel farkıyla doğrulanır (jeton bitince slotta durur). CLI:
+  `--auto-battle --mount --provoke --provoke-counts 3,2`.
+- **Birleşik panel.** ÇALIŞMA MODU: Meslek / Avlan radyoları; Avlan'da özel yaratık
+  ekleme (her haritada farklı türler için), seviye sınırları ve üç dövüş seçeneği
+  kutusu + slot adetleri. Mod ve tüm av tercihleri kalıcı.
+- **Bozuk `.venv` onarımı:** sistem Python güncellemesi venv bağını koparmıştı;
+  `./setup.sh` ile yeniden kuruldu.
+- Doğrulama: **261 test geçti** (2 atlanan); canlıda iki dövüş uçtan uca tamamlandı
+  (seçim, iki kez ad doğrulaması, "Ava" dönüşü). Dövüş içi eylemlerin canlı denemesi
+  ilk koşuda yapılacak. Ayrıntı `VERIFICATION.md` içinde.

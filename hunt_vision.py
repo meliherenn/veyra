@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 from config import (ROOT, HUNT_SPRITE_DY, HUNT_LABEL_MIN_V, HUNT_LABEL_MIN_S,
-                    HUNT_ATTACK_TEMPLATE_THRESHOLD)
+                    HUNT_ATTACK_TEMPLATE_THRESHOLD, HUNT_FIGHT_BUTTON_THRESHOLD)
 from hunt_catalog import parse_label
 from metrics import METRICS
 
@@ -17,6 +17,10 @@ from metrics import METRICS
 # aralığı ikisini de kapsar; yeni bir renk görülürse burası genişletilir.
 HUE_LO, HUE_HI = 22, 45
 YELLOW_MAX_HUE = 35
+
+# Dövüş içi eylem düğmeleri: sol araç çubuğunda üst üste dururlar ve iki gerçek
+# çekimde de aynı piksel ölçeğindedir (foto 1506x598, fixture 1920x983).
+FIGHT_BUTTON_KINDS = ('provoke', 'mount', 'auto')
 
 
 @dataclass(frozen=True)
@@ -46,6 +50,20 @@ class HuntVision:
             template = cv2.imread(str(path), cv2.IMREAD_COLOR)
             if template is not None:
                 self.attack_template = cv2.cvtColor(template, cv2.COLOR_BGR2RGB)
+        # Dövüş içi eylem düğmeleri (otomatik savaş / binek / provokasyon).
+        self.fight_templates = {}
+        for kind in FIGHT_BUTTON_KINDS:
+            path = ROOT / 'assets' / f'hunt-{kind}-button.png'
+            if path.exists():
+                template = cv2.imread(str(path), cv2.IMREAD_COLOR)
+                if template is not None:
+                    self.fight_templates[kind] = cv2.cvtColor(template, cv2.COLOR_BGR2RGB)
+        self.lock_template = None
+        path = ROOT / 'assets' / 'hunt-slot-lock.png'
+        if path.exists():
+            template = cv2.imread(str(path), cv2.IMREAD_COLOR)
+            if template is not None:
+                self.lock_template = cv2.cvtColor(template, cv2.COLOR_BGR2RGB)
 
     # ------------------------------------------------------------------ harita
     @staticmethod
@@ -223,3 +241,97 @@ class HuntVision:
             if re.search(r'\bava\b', text):
                 return (x + w//2, y + h//2)
         return None
+
+    # --------------------------------------------------------- dövüş içi eylemler
+    @staticmethod
+    def _best_match(frame, template, scales=(1.0, 0.9, 1.1)):
+        """Çok ölçekli şablon araması: (en iyi skor, merkez) döner."""
+        best = (0.0, None)
+        for scale in scales:
+            t = template if scale == 1.0 else cv2.resize(
+                template, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+            if t.shape[0] >= frame.shape[0] or t.shape[1] >= frame.shape[1]:
+                continue
+            # minMaxLoc (minVal, maxVal, minLoc, maxLoc) döndürür; aranan maxVal'dir.
+            _min, score, _min_loc, loc = cv2.minMaxLoc(cv2.matchTemplate(frame, t, cv2.TM_CCOEFF_NORMED))
+            if score > best[0]:
+                best = (score, (loc[0] + t.shape[1]//2, loc[1] + t.shape[0]//2))
+        return best
+
+    def fight_button(self, frame, kind, threshold=None):
+        """Dövüş ekranında eylem düğmesinin (provoke/mount/auto) merkezi; yoksa None.
+
+        Araç çubuğu oyun görünümünün sol kenarında durur; pencere yeri
+        değişebileceği için tam karede aranır. Şablonlar iki gerçek çekimde de
+        aynı ölçekte doğrulandı (skorlar 0.94-1.0), eşik bilerek yüksektir.
+        """
+        template = self.fight_templates.get(kind)
+        if template is None:
+            return None
+        limit = HUNT_FIGHT_BUTTON_THRESHOLD if threshold is None else threshold
+        with METRICS.span(f'fight_button_{kind}'):
+            score, center = self._best_match(frame, template)
+        return center if score >= limit else None
+
+    @staticmethod
+    def _teal_mask(region):
+        """Çağırma sayacı rakamlarının camgöbeği maskesi ('kullanilan/limit')."""
+        r, g, b = region.astype(np.int16).transpose(2, 0, 1)
+        return ((g > 115) & (b > 115) & (r < g - 25) & (r < b - 25)
+                & (g < 225) & (b < 225)).astype(np.uint8)
+
+    def summon_slots(self, frame, lock_threshold=0.80):
+        """Provokasyon çağırma çubuğundaki açık slotlar, soldan sağa.
+
+        Kilitli slotlar kilit şablonuyla bulunur ve satır y'si oradan alınır;
+        açık slotlar o banttaki camgöbeği sayaç rakamlarından çıkarılır.
+        Dönüş: (slotlar, kilitli_merkezler); slot = (tıklama_x, tıklama_y,
+        sayaç_kutusu) ve tıklama noktası kartın gövdesine düşer.
+        """
+        frame_h, frame_w = frame.shape[:2]
+        locks = []
+        row_y = None
+        if self.lock_template is not None:
+            lh, lw = self.lock_template.shape[:2]
+            band = frame[frame_h//2:]
+            if band.shape[0] > lh and band.shape[1] > lw:
+                res = cv2.matchTemplate(band, self.lock_template, cv2.TM_CCOEFF_NORMED)
+                ys, xs = np.where(res >= lock_threshold)
+                kept = []
+                for x, y in sorted(zip(xs.tolist(), ys.tolist())):
+                    if all(abs(x - kx) > 30 or abs(y - ky) > 30 for kx, ky in kept):
+                        kept.append((x, y))
+                locks = [(x + lw//2, y + frame_h//2 + lh//2) for x, y in kept]
+                if locks:
+                    row_y = int(np.median([y for _x, y in locks]))
+        groups = []
+        if row_y is not None:
+            y0, y1 = row_y + 10, row_y + 44
+        else:
+            y0, y1 = frame_h*2//3, frame_h
+        band = frame[y0:y1]
+        if band.size:
+            closed = cv2.morphologyEx(self._teal_mask(band), cv2.MORPH_CLOSE,
+                                      np.ones((3, 21), np.uint8))
+            count, _, stats, _ = cv2.connectedComponentsWithStats(closed)
+            for x, y, w, h, area in stats[1:count]:
+                if area < 25 or not 20 <= w <= 40 or not 8 <= h <= 30:
+                    continue
+                cx, cy = x + w//2, y0 + y + h//2
+                if any(abs(cx - lx) < 40 and abs(cy - ly) < 40 for lx, ly in locks):
+                    continue
+                groups.append((cx, cy, (int(x), int(y0 + y), int(w), int(h))))
+        groups.sort()
+        # Sayaç, kartın sağ alt köşesine yakın durur; gövde ~27 px üstünde ve
+        # ~10 px soldadır (iki gerçek çekimde aynı kayma ölçüldü).
+        slots = [(cx - 10, cy - 27, box) for cx, cy, box in groups]
+        return slots, locks
+
+    def counter_mask(self, frame, box):
+        """Sayaç kutusunun teal maskesi: tıklama öncesi/sonrası artış kıyası."""
+        x, y, w, h = box
+        x0, y0 = max(0, x - 2), max(0, y - 2)
+        region = frame[y0:y + h + 2, x0:x + w + 2]
+        if region.size == 0:
+            return None
+        return self._teal_mask(region)
