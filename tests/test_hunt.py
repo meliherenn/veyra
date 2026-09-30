@@ -93,6 +93,21 @@ def test_selection_ring_is_not_mistaken_for_a_creature_label(detector, vision):
     assert len(creatures) == 11
 
 
+def test_bear_map_labels_found_beside_bright_grass(detector, vision):
+    """Ayı haritasının çimeni eski renk bandına giriyor (148 bin piksel) ve
+    Yaslı Phadd etiketleri hue 18 ile eski ton sınırının altındaydı; iki sorun
+    birden botun 'yaratık yok' demesine yol açıyordu."""
+    f = frame('hunt-bears-map.png')
+    layout = detector.detect_layout(f)
+    assert layout is not None
+    found = vision.find_labels(f, layout)
+    assert len(found) == 5
+    yasli = [t for t in found if t.width >= 90]
+    phadd = [t for t in found if t.width <= 75]
+    assert len(yasli) == 3 and len(phadd) == 2
+    assert all(t.color == 'sari' for t in found)
+
+
 def test_click_point_lands_on_the_creature_sprite(detector, vision):
     f = frame('hunt-selected.png')
     layout = detector.detect_layout(f)

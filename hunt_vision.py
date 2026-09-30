@@ -13,9 +13,11 @@ from config import (ROOT, HUNT_SPRITE_DY, HUNT_LABEL_MIN_V, HUNT_LABEL_MIN_S,
 from hunt_catalog import parse_label
 from metrics import METRICS
 
-# Etiket renkleri: sarı (Maharetli Fitsilya) ve limon yeşili (Krogan). Ton
-# aralığı ikisini de kapsar; yeni bir renk görülürse burası genişletilir.
-HUE_LO, HUE_HI = 22, 45
+# Etiket renkleri: altın/sarı (Phadd Ayisi, Maharetli Fitsilya) ve limon
+# yeşili (Krogan). Ton alt sınırı 15'tir: Yaslı Phadd Ayisi etiketleri hue
+# 18'dir ve eski 22 sınırı onları kaçırıyordu. Yeni bir renk görülürse
+# burası genişletilir.
+HUE_LO, HUE_HI = 15, 45
 YELLOW_MAX_HUE = 35
 
 # Dövüş içi eylem düğmeleri: sol araç çubuğunda üst üste dururlar ve iki gerçek
