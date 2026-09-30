@@ -188,6 +188,34 @@ def test_counter_mask_reacts_to_digit_changes(vision):
     assert not (before == shifted).all()
 
 
+def test_summon_slots_without_locks_use_the_busiest_counter_row(vision):
+    """Tüm slotlar açıldığında ekranda kilit olmaz; sayaç grubu en kalabalık
+    y satırından bulunur, altta tek başına duran 'jeton' yazısı alınmaz."""
+    f = np.zeros((1080, 1920, 3), np.uint8)
+    teal = (0, 200, 200)
+    for x in (100, 210, 320):          # üç slot sayacı aynı satırda
+        f[790:800, x:x + 26] = teal
+    f[830:840, 150:180] = teal         # altta tek '1500' benzeri yazı
+    slots, locks = vision.summon_slots(f)
+    assert locks == []
+    assert len(slots) == 3
+    xs = [s[0] for s in slots]
+    assert xs == sorted(xs) and xs[0] < xs[1] < xs[2]
+    for slot in slots:
+        assert abs(slot[1] - (795 - 27)) <= 3
+
+
+def test_mount_flag_reaches_the_bot():
+    """CLI --mount → HuntBot.mount_summon (isim uyuşmazlığı bineği sessizce
+    kapatıyordu; binek hiç denenmiyordu)."""
+    args = main.parse_args(['--hunt', '--mount', '--provoke', '--auto-battle'])
+    assert args.mount is True
+    bot = HuntBot(SimpleNamespace(commands=__import__('queue').Queue(), is_game_active=lambda: True,
+                                state={'geometry': [0, 0, 1920, 1080], 'screens': 1}),
+                  Mock(), Mock(), Mock(), args)
+    assert bot.mount_summon is True and bot.provoke is True and bot.auto_battle is True
+
+
 # --------------------------------------------------- sahte oyun (uçtan uca)
 class FakeGame:
     """Gerçek ekran görüntülerinden kurulan küçük oyun: harita -> seçim -> dövüş -> sonuç."""

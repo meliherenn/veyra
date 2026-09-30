@@ -284,9 +284,10 @@ class HuntVision:
         """Provokasyon çağırma çubuğundaki açık slotlar, soldan sağa.
 
         Kilitli slotlar kilit şablonuyla bulunur ve satır y'si oradan alınır;
-        açık slotlar o banttaki camgöbeği sayaç rakamlarından çıkarılır.
-        Dönüş: (slotlar, kilitli_merkezler); slot = (tıklama_x, tıklama_y,
-        sayaç_kutusu) ve tıklama noktası kartın gövdesine düşer.
+        açık slotlar o banttaki camgöbeği sayaç rakamlarından çıkarılır. Hiç
+        kilit yoksa (tüm slotlar açılmış) sayaç grubu en çok üyeli y'yi satır
+        sayar. Dönüş: (slotlar, kilitli_merkezler); slot = (tıklama_x,
+        tıklama_y, sayaç_kutusu) ve tıklama noktası kartın gövdesine düşer.
         """
         frame_h, frame_w = frame.shape[:2]
         locks = []
@@ -308,7 +309,9 @@ class HuntVision:
         if row_y is not None:
             y0, y1 = row_y + 10, row_y + 44
         else:
-            y0, y1 = frame_h*2//3, frame_h
+            # Kilitli slot yok: sayaçlar ekranın alt yarısında, alttaki 'jeton'
+            # yazısından yukarıda ve en kalabalık y satırındadır.
+            y0, y1 = frame_h//2, frame_h
         band = frame[y0:y1]
         if band.size:
             closed = cv2.morphologyEx(self._teal_mask(band), cv2.MORPH_CLOSE,
@@ -317,11 +320,19 @@ class HuntVision:
             for x, y, w, h, area in stats[1:count]:
                 if area < 25 or not 20 <= w <= 40 or not 8 <= h <= 30:
                     continue
-                cx, cy = x + w//2, y0 + y + h//2
-                if any(abs(cx - lx) < 40 and abs(cy - ly) < 40 for lx, ly in locks):
+                cy = y0 + y + h//2
+                if any(abs(cy - ly) < 40 and abs(x + w//2 - lx) < 40 for lx, ly in locks):
                     continue
-                groups.append((cx, cy, (int(x), int(y0 + y), int(w), int(h))))
-        groups.sort()
+                groups.append((x + w//2, cy, (int(x), int(y0 + y), int(w), int(h))))
+        if row_y is None and groups:
+            rows = {}
+            for cx, cy, box in groups:
+                anchor = next((ry for ry in rows if abs(ry - cy) <= 10), None)
+                rows.setdefault(anchor if anchor is not None else cy, []).append((cx, cy, box))
+            best = max(rows.values(), key=lambda row: (len(row), -min(cy for _x, cy, _b in row)))
+            groups = sorted(best)
+        else:
+            groups.sort()
         # Sayaç, kartın sağ alt köşesine yakın durur; gövde ~27 px üstünde ve
         # ~10 px soldadır (iki gerçek çekimde aynı kayma ölçüldü).
         slots = [(cx - 10, cy - 27, box) for cx, cy, box in groups]

@@ -12,6 +12,7 @@ import time
 
 import cv2
 import numpy as np
+from PIL import Image
 
 from config import (POLL_INTERVAL, SELECT_TIMEOUT, TARGET_RETRY_SECONDS, NO_FISH_ALERT_SECONDS,
                     TRANSIENT_BLOCK_FRAMES, RESUME_FAST_SECONDS, WARNING_CLOSE_INTERVAL,
@@ -22,6 +23,7 @@ from config import (POLL_INTERVAL, SELECT_TIMEOUT, TARGET_RETRY_SECONDS, NO_FISH
                     HUNT_FIGHT_SETTLE_SECONDS, HUNT_SUMMON_MAX_PER_SLOT)
 from hunt_catalog import KNOWN, match_species, name_score, resolve_requested
 from hunt_vision import HuntVision
+import main
 from main import FishingBot
 from metrics import METRICS
 
@@ -41,7 +43,7 @@ class HuntBot(FishingBot):
         self.max_level = getattr(args, 'max_level', None)
         # Dövüş içi eylemler: provokasyonla yaratık çağırma, binek, otomatik savaş.
         self.provoke = bool(getattr(args, 'provoke', False))
-        self.mount_summon = bool(getattr(args, 'mount_summon', False))
+        self.mount_summon = bool(getattr(args, 'mount', False))
         self.auto_battle = bool(getattr(args, 'auto_battle', False))
         self.provoke_counts = [int(n) for n in (getattr(args, 'provoke_counts', None) or [])]
         self.fight_actions_done = False
@@ -382,7 +384,12 @@ class HuntBot(FishingBot):
                 break
             time.sleep(0.5)
         if not slots:
-            self.notice('Çağırma çubuğu açılmadı; provokasyon atlandı.')
+            self.notice('Çağırma çubuğu açılmadı; provokasyon atlandı. '
+                        'Son kare runtime/last-provoke.png içine kaydedildi.')
+            try:
+                Image.fromarray(fresh).save(main.RUNTIME / 'last-provoke.png')
+            except (OSError, ValueError):
+                pass
             return
         self.notice(f'Çağırma çubuğu açık: {len(slots)} slot. Sıra: '
                     + ', '.join(str(self.provoke_counts[i] if i < len(self.provoke_counts) else 0)
