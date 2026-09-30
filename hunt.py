@@ -280,8 +280,21 @@ class HuntBot(FishingBot):
                    alarm=False, seconds=RESUME_FAST_SECONDS)
 
     # -------------------------------------------------------- dövüş içi eylemler
+    def neutral_move(self, like_frame):
+        """İmleci ekranın boş bir noktasına alır: okuma karelerinde düğme/ kart
+        vurgusu (hover) şablonları ve sayaç rakamlarını karştırmasın."""
+        h, w = like_frame.shape[:2]
+        try:
+            self.mouse.move_to(*self.pixel_to_desktop((w//2, h//3), like_frame))
+        except (InterruptedError, ValueError):
+            pass
+
     def fight_guard(self, kind, point):
-        """Dövüş düğmesi tıklamasından hemen önce: koruma, odak, düğme hâlâ yerinde mi?"""
+        """Dövüş düğmesi tıklamasından hemen önce: koruma, odak ve hâlâ dövüş
+        ekranındayız. Düğme şablonu burada yeniden okunmaz: imleç düğmenin
+        üstüne gelince oyunun vurgusu şablon skorunu düşürüyor ve tıklama
+        boşuna iptal oluyordu. Nokta, tıklamadan hemen önceki karede
+        doğrulanmıştır; dövüş arayüzü düğmeleri kendiliğinden kaydırmaz."""
         self.control_guard()
         if not self.desktop.is_game_active():
             raise InterruptedError('Oyun odaktan çıktı; dövüş eylemi iptal edildi.')
@@ -290,13 +303,16 @@ class HuntBot(FishingBot):
         if protected:
             self.block(reason or 'Bot koruması.', fresh)
             raise InterruptedError('Bot koruması; dövüş eylemi iptal edildi.')
-        current = self.vision.fight_button(fresh, kind)
-        if not current or math.dist(current, point) > 6:
-            raise InterruptedError(f'{kind} düğmesi son kontrolde görünmedi.')
+        if self.detector.observe(fresh).layout is not None or self.vision.result_button(fresh, self.scale_hint):
+            raise InterruptedError(f'Dövüş ekranı değişti; {kind} düğmesine basılmadı.')
         self.control_guard()
 
     def summon_guard(self, point):
-        """Çağırma tıklamasından önce: koruma/odak ve slota hâlâ erişilebiliyor mu?"""
+        """Çağırma tıklamasından önce: koruma/odak, dövüş sürüyor ve çubuk açık.
+
+        Slot kartı imleç altında parlayabildiği için slotun kendisi burada
+        yeniden aranmaz; çubuğun tamamı kapandıysa (harita/sonuç) durur.
+        """
         self.control_guard()
         if not self.desktop.is_game_active():
             raise InterruptedError('Oyun odaktan çıktı; çağırma iptal edildi.')
@@ -307,9 +323,11 @@ class HuntBot(FishingBot):
             raise InterruptedError('Bot koruması; çağırma iptal edildi.')
         if self.vision.result_button(fresh, self.scale_hint):
             raise InterruptedError('Dövüş çağırma bitmeden bitti; çağırma durduruldu.')
-        slots, _locks = self.vision.summon_slots(fresh)
-        if not any(math.dist((x, y), point) <= 10 for x, y, _box in slots):
-            raise InterruptedError('Çağırma slotu son kontrolde görünmedi.')
+        if self.detector.observe(fresh).layout is not None:
+            raise InterruptedError('Haritaya dönüldü; çağırma durduruldu.')
+        slots, locks = self.vision.summon_slots(fresh)
+        if not slots and not locks:
+            raise InterruptedError('Çağırma çubuğu kapandı; çağırma durduruldu.')
         self.control_guard()
 
     def click_fight_button(self, frame, kind, message):
@@ -333,10 +351,15 @@ class HuntBot(FishingBot):
                 self.run_provoke(frame)
             except InterruptedError as error:
                 self.notice(f'Provokasyon yarıda kaldı: {error}')
-                frame = self.detector.capture()
+        if self.mount_summon or self.auto_battle:
+            # Önceki tıklamanın hover'ı bir sonraki düğmeyi maskelemesin.
+            self.neutral_move(frame)
+            frame = self.detector.capture()
         if self.mount_summon:
             self.click_fight_button(frame, 'mount', 'Binek çağırılıyor.')
-            frame = self.detector.capture()
+            if self.auto_battle:
+                self.neutral_move(frame)
+                frame = self.detector.capture()
         if self.auto_battle:
             self.click_fight_button(frame, 'auto', 'Otomatik savaş açılıyor.')
 
@@ -373,6 +396,9 @@ class HuntBot(FishingBot):
             previous_mask = None
             summoned = 0
             while summoned < wanted:
+                # Tıklama sonrası imleç slotun üstünde kalır; hover, sayaç
+                # rakamlarını karıştırabileceği için okumadan önce boşa alınır.
+                self.neutral_move(fresh)
                 fresh = self.detector.capture()
                 current, _locks = self.vision.summon_slots(fresh)
                 slot = next((s for s in current if abs(s[0] - anchor_x) <= 10), None)

@@ -481,6 +481,44 @@ def test_stop_command_raises_the_shared_stoprequested(mocked):
 
 
 # ------------------------------------------------------ dövüş içi eylemler
+def test_fight_guard_clicks_despite_hover_but_not_on_map_return(mocked):
+    """İmleç düğmenin üstüne gelince oyunun vurgusu şablon skorunu düşürür;
+    guard şablonu yeniden okumaz, yalnızca ekran durumuna bakar. Harita
+    dönünce ya da sonuç penceresi çıkınca tıklama iptal edilir."""
+    bot = mocked
+    bot.args.dry_run = False
+    # Dövüş ekranı: harita yok, sonuç penceresi yok -> guard geçer.
+    bot.detector.observe.return_value = Observation(None)
+    bot.vision.result_button.return_value = None
+    bot.detector.check_bot_protection.return_value = (False, '')
+    bot.fight_guard('provoke', (50, 100))
+    # Harita döndüyse dövüş bitmiştir: basma.
+    bot.detector.observe.return_value = Observation(Layout(193, 238, 1713, 764))
+    with pytest.raises(InterruptedError, match='Dövüş ekranı değişti'):
+        bot.fight_guard('provoke', (50, 100))
+    # Sonuç penceresi çıktıysa dövüş bitti: basma.
+    bot.detector.observe.return_value = Observation(None)
+    bot.vision.result_button.return_value = (1000, 254)
+    with pytest.raises(InterruptedError, match='Dövüş ekranı değişti'):
+        bot.fight_guard('auto', (50, 244))
+
+
+def test_summon_guard_allows_hovered_slot_but_stops_when_bar_closes(mocked):
+    bot = mocked
+    bot.args.dry_run = False
+    bot.detector.observe.return_value = Observation(None)
+    bot.detector.check_bot_protection.return_value = (False, '')
+    bot.vision.result_button.return_value = None
+    # İmleç slotun üstünde: slot listesi boş dönse bile kilitli slotlar
+    # çubuğun hâlâ açık olduğunu kanıtlar -> tıklanır.
+    bot.vision.summon_slots.return_value = ([], [(300, 200)])
+    bot.summon_guard((100, 200))
+    # Çubuk tamamen kapandı: basma.
+    bot.vision.summon_slots.return_value = ([], [])
+    with pytest.raises(InterruptedError, match='çubuğu kapandı'):
+        bot.summon_guard((100, 200))
+
+
 def test_fight_actions_click_provoke_summon_mount_then_auto(mocked):
     bot = mocked
     bot.provoke = bot.mount_summon = bot.auto_battle = True

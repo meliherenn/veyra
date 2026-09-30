@@ -149,14 +149,17 @@ class ControlWindow(QMainWindow):
         self.provoke_cb=QCheckBox('Provokasyon (mor maske)')
         self.provoke_cb.setToolTip('Dövüş başlayınca provokasyonu açıp seçtiğiniz adetlerde yaratık çağırır (jeton harcar).')
         hunt_layout.addWidget(self.provoke_cb)
-        self.provoke_row=QWidget();provoke_layout=QHBoxLayout(self.provoke_row)
-        provoke_layout.setContentsMargins(0,0,0,0);provoke_layout.setSpacing(4)
-        provoke_layout.addWidget(label('Adetler',muted=True))
+        self.provoke_row=QWidget();provoke_v=QVBoxLayout(self.provoke_row)
+        provoke_v.setContentsMargins(0,0,0,0);provoke_v.setSpacing(2)
+        provoke_v.addWidget(label('Adetler (soldan sağa)',muted=True))
+        spins_row=QHBoxLayout();spins_row.setSpacing(4)
         self.provoke_spins=[]
         for slot in range(5):
-            spin=QSpinBox();spin.setRange(0,99);spin.setPrefix(f'{slot+1}. ')
+            spin=QSpinBox();spin.setRange(0,99);spin.setFixedWidth(46)
+            spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
             spin.setToolTip(f'{slot+1}. slot (soldan) kaç yaratık çağrılsın. 0 = o slot boş geçilir.')
-            self.provoke_spins.append(spin);provoke_layout.addWidget(spin)
+            self.provoke_spins.append(spin);spins_row.addWidget(spin)
+        provoke_v.addLayout(spins_row)
         self.provoke_row.setVisible(False)
         hunt_layout.addWidget(self.provoke_row)
         provoke_note=label('Slot sırası çubuktaki kartların soldan sağa sırasıdır. '

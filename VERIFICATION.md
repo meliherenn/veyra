@@ -524,3 +524,34 @@ olabildiği için tür eklenebilmesi.
 - Açık nokta: dövüş içi eylemler gerçek oyunda canlı deneme bekliyor (şablonlar ve
   akış iki gerçek çekim + simülasyonla sınandı). İlk canlı denemede jeton bakiyesine
   dikkat: her çağrı jeton harcar.
+
+## Hover düzeltmesi ve ilk canlı dövüş — 1 Ekim 2026
+
+### Kullanıcının canlı denemesi (01:27, `--creatures all`)
+
+- `Phadd Ayisi [5]` (katalog dışı) bulundu, iki aşamada doğrulandı, saldırıldı; dövüş
+  ve sonuç ekranı akışı çalıştı. 'all' modu bilinmeyen türü doğru kabul etti.
+- Dövüş içi eylemler başarısız: `provoke/auto düğmesi son kontrolde görünmedi` — fare
+  düğmenin üstüne gelince **oyunun hover vurgusu** şablon skorunu 0,90 altına düşürüyor,
+  `fight_guard` taze karede düğmeyi bir daha bulamayıp tıklamayı iptal ediyordu
+  (kullanıcının raporu: "butonların üstüne geldi ama basmadı").
+
+### Düzeltmeler
+
+- `fight_guard` artık düğme şablonunu yeniden okumaz; koruma + odak + hâlâ dövüş
+  ekranı (harita yok, sonuç penceresi yok) doğrular. Nokta zaten tıklamadan hemen
+  önceki karede 0,90+ ile doğrulanmıştır; dövüş arayüzü düğmeleri kaydırmaz
+  (`test_fight_guard_clicks_despite_hover_but_not_on_map_return`).
+- `summon_guard` aynı sebeple gevşetildi: slot kartı imleç altında parlasa bile
+  çubuk açıksa (slot veya kilit görünüyor) tıklanır; çubuk kapandıysa durur
+  (`test_summon_guard_allows_hovered_slot_but_stops_when_bar_closes`).
+- `neutral_move()`: her tıklamadan sonra imleç ekranın boş bir noktasına alınır;
+  önceki düğmenin hover'ı sonraki düğmenin şablonunu/sayacını karıştırmasın.
+  Çağırma döngüsünde sayaç okuması da imleç boşta iken yapılır.
+- Panel: "Adetler" spinbox'ları önek yüzünden daralan kutularda okunmuyordu;
+  önek kaldırıldı, kutular 46 px ortalı, başlık "Adetler (soldan sağa)".
+- Başlangıç logu dövüş seçeneklerini de yazar (`dövüş: provokasyon+binek+oto-savaş`).
+
+Test: **263 geçti** (2 atlanan). Panel iki modda offscreen render ile görsel doğrulandı
+(adet kutuları net okunuyor). Dövüş içi tıklamaların hover'lı canlı sınavı bir sonraki
+koşuda yapılacak.

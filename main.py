@@ -758,10 +758,13 @@ def main(argv=None):
                                 (signal.SIGUSR1,'pause'),(signal.SIGUSR2,'resume')):
                 signal.signal(sig,lambda signum,frame,c=command: desktop.commands.put(c))
             if args.hunt:
-                LOG.info('Yaratık avı: %s | seviye %s-%s | F8: duraklat/devam | F9: durdur | kaydırma: %s',
+                fight_options='+'.join(label for flag,label in (
+                    (args.provoke,'provokasyon'),(args.mount,'binek'),(args.auto_battle,'oto-savaş')) if flag)
+                LOG.info('Yaratık avı: %s | seviye %s-%s | dövüş: %s | F8: duraklat/devam | F9: durdur | kaydırma: %s',
                          'tümü' if bot.allow_all else ', '.join(s.name for s in bot.species),
                          bot.min_level if bot.min_level is not None else '*',
-                         bot.max_level if bot.max_level is not None else '*',not args.no_scroll)
+                         bot.max_level if bot.max_level is not None else '*',
+                         fight_options or 'yok',not args.no_scroll)
             else:
                 LOG.info('Hedefler: %s | F8: duraklat/devam | F9: durdur | kaydırma: %s',
                          ', '.join(COLORS[i] for i in bot.selected_colors) if bot.selected_colors else
