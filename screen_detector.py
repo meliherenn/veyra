@@ -130,6 +130,24 @@ class ScreenDetector:
             raise RuntimeError("Ekran görüntüsü boyutu geçersiz; tıklama yapılmadı.")
         return frame
 
+    def capture_screen(self):
+        """Tam ekran karesı: oyunun ÜSTÜNE açılan ayrı pencereleri de içerir.
+
+        Eylem onayı ('Eylem «...»') ayrı bir tarayıcı penceresidir; oyun
+        penceresi karesı onu içermez. spectacle yolu zaten tam ekran döner.
+        """
+        with METRICS.span('capture'):
+            grabbed = self.grabber.grab_root() if self.grabber is not None else None
+            if grabbed is not None:
+                METRICS.bump('capture_root')
+                frame, self.capture_rect = grabbed
+            else:
+                METRICS.bump('capture_spectacle')
+                frame, self.capture_rect = self._capture_spectacle(), None
+        if frame.shape[0] < 200 or frame.shape[1] < 400:
+            raise RuntimeError("Ekran görüntüsü boyutu geçersiz; tıklama yapılmadı.")
+        return frame
+
     def _capture_spectacle(self):
         path = self.path / "screen.png"
         # Spectacle is single-instance. Serialize local capture clients and

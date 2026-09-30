@@ -81,6 +81,25 @@ class X11Grabber:
             self._missed_at = time.monotonic()
             return None
 
+    def grab_root(self):
+        """Tam ekran karesı: oyunun ÜSTÜNE açılan ayrı pencereleri de içerir.
+
+        Eylem onayı ('Eylem «...»') ayrı bir tarayıcı penceresi olarak açılır;
+        oyun penceresinin kendi tamponu popup piksellerini içermez, bu yüzden
+        onay araması kök pencereden okur. Dönüş (frame, (0, 0, w, h)).
+        """
+        try:
+            conn = self._connect()
+            root = conn.screen().root
+            geom = root.get_geometry()
+            if geom.width < 400 or geom.height < 200:
+                return None
+            image = root.get_image(0, 0, geom.width, geom.height, X.ZPixmap, 0xffffffff)
+            frame = bgra_to_rgb(bytes(image.data), geom.width, geom.height)
+            return frame, (0, 0, geom.width, geom.height)
+        except Exception:
+            return None
+
     def _connect(self):
         if self._display is None:
             self._display = display.Display()

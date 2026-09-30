@@ -188,6 +188,25 @@ class HuntBot(FishingBot):
             self.notice(str(error))
             return
         if not self.desktop.is_game_active():
+            # Onay popup'ı oyundan AYRI bir pencere olarak odağı alabilir;
+            # dövüş içi eylemlerden sonra bekleyen onayı burada yönet.
+            if (self.phase == 'ENGAGED' and self.fight_actions_done
+                    and self.confirm_retries < HUNT_CONFIRM_RETRIES
+                    and time.monotonic() - self.last_confirm_check >= 1.0):
+                self.last_confirm_check = time.monotonic()
+                self.desktop.allow_action_popup = True
+                try:
+                    fresh = self.detector.capture_screen()
+                    if self.vision.confirm_apply_button(fresh):
+                        self.confirm_retries += 1
+                        self.notice('Bekleyen eylem onayı görüldü; Uygula deneniyor.')
+                        self.confirm_pending_action(1.5)
+                        return
+                except InterruptedError as error:
+                    self.notice(f'Onay verilemedi: {error}')
+                    return
+                finally:
+                    self.desktop.allow_action_popup = False
             METRICS.bump('focus_wait')
             self.blocked_frames = 0
             self.block('Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.', alarm=False)
@@ -278,13 +297,17 @@ class HuntBot(FishingBot):
             elif self.fight_actions_done and self.confirm_retries < HUNT_CONFIRM_RETRIES \
                     and now - self.last_confirm_check >= 1.0:
                 # Onay penceresi açıkken odağı kaybolduysa Uygula yarım kalmıştır;
-                # odaq dönünce dövüş boyunca yeniden denenir.
+                # dövüş boyunca yeniden denenir.
                 self.last_confirm_check = now
-                fresh = self.detector.capture()
-                if self.vision.confirm_apply_button(fresh):
-                    self.confirm_retries += 1
-                    self.notice('Bekleyen eylem onayı görüldü; Uygula deneniyor.')
-                    self.confirm_pending_action(1.5)
+                self.desktop.allow_action_popup = True
+                try:
+                    fresh = self.detector.capture_screen()
+                    if self.vision.confirm_apply_button(fresh):
+                        self.confirm_retries += 1
+                        self.notice('Bekleyen eylem onayı görüldü; Uygula deneniyor.')
+                        self.confirm_pending_action(1.5)
+                finally:
+                    self.desktop.allow_action_popup = False
             self.notice(f'Dövüş sürüyor ({waited:.0f} sn); sonuç ekranı bekleniyor.')
             return
         # Dövüş dışında harita görünmüyor: kullanıcı başka bir ekrana geçmiş olabilir.
@@ -389,22 +412,27 @@ class HuntBot(FishingBot):
     def confirm_pending_action(self, window=2.0):
         """Eylem onay penceresi ('...onaylayın') açıldıysa Uygula'ya basar.
 
-        Binek çağırma oyunun standart onay penceresini açar; onaylanmadığında
-        dövüş donuk kalıyordu. Pencere yoksa pencere süresi kadar bakınır ve
-        False döner.
+        Onay, oyunun ÜSTÜNE açılan AYRI bir tarayıcı penceresidir: kare tam
+        ekrandan alınır ve popup aktifken fare izni kapsamlı açılır (aksi
+        halde 'oyun odakta değil' ile tıklama yarım kalırdı). Pencere yoksa
+        window süresi kadar bakınır ve False döner.
         """
         deadline = time.monotonic() + window
-        while time.monotonic() < deadline:
-            fresh = self.detector.capture()
-            button = self.vision.confirm_apply_button(fresh)
-            if button:
-                self.mouse.click(*self.pixel_to_desktop(button, fresh),
-                                 before_click=lambda p=button: self.confirm_guard(p))
-                METRICS.bump('confirm_apply')
-                self.notice('Eylem onayı Uygula ile verildi.')
-                time.sleep(0.6)
-                return True
-            time.sleep(0.4)
+        self.desktop.allow_action_popup = True
+        try:
+            while time.monotonic() < deadline:
+                fresh = self.detector.capture_screen()
+                button = self.vision.confirm_apply_button(fresh)
+                if button:
+                    self.mouse.click(*self.pixel_to_desktop(button, fresh),
+                                     before_click=lambda p=button: self.confirm_guard(p))
+                    METRICS.bump('confirm_apply')
+                    self.notice('Eylem onayı Uygula ile verildi.')
+                    time.sleep(0.6)
+                    return True
+                time.sleep(0.4)
+        finally:
+            self.desktop.allow_action_popup = False
         return False
 
     def perform_fight_actions(self):

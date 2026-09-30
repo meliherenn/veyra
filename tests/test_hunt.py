@@ -249,13 +249,16 @@ def test_live_summon_bar_slots_and_locks_are_found(vision):
 
 
 def test_confirm_apply_clicks_the_dialog_button(mocked):
-    """Binek çağırma 'Eylem ... onaylayın' penceresi açar; Uygula'ya basılır."""
+    """Binek çağırma 'Eylem ... onaylayın' penceresi açar; Uygula'ya basılır.
+    Pencere ayrı bir popup olduğu için kare tam ekrandan alınır."""
     bot = mocked
     bot.args.dry_run = False
+    bot.detector.capture_screen.return_value = np.zeros((1080, 1920, 3), np.uint8)
     apply_point = (960, 540)
     bot.vision.confirm_apply_button.side_effect = [apply_point, None]
     bot.detector.check_bot_protection.return_value = (False, '')
     assert bot.confirm_pending_action(window=1.0) is True
+    assert bot.desktop.allow_action_popup is False  # akış sonunda izin kapanır
     assert bot.mouse.click.call_count == 1
     assert bot.mouse.click.call_args.args[:2] == main_module_pixel(bot, apply_point)
     # Pencere hiç çıkmazsa False döner, tıklama gitmez.
@@ -266,7 +269,7 @@ def test_confirm_apply_clicks_the_dialog_button(mocked):
 
 
 def main_module_pixel(bot, point):
-    return bot.pixel_to_desktop(point, bot.detector.capture.return_value)
+    return bot.pixel_to_desktop(point, bot.detector.capture_screen.return_value)
 
 
 # --------------------------------------------------- sahte oyun (uçtan uca)

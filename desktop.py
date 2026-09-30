@@ -77,6 +77,10 @@ class Desktop:
         self.state = {}
         self.updated = threading.Event()
         self.commands = queue.Queue()
+        # Eylem onayı ('Eylem «...»') ayrı bir tarayıcı penceresi açar ve odağı
+        # alır. Yalnızca onay akışı sırasında True yapılır: o sırada aktif
+        # pencere bu popup olduğunda da fare çalışır.
+        self.allow_action_popup = False
         self.receiver = _Receiver(self.bus, self)
         self.loop = GLib.MainLoop()
         self.thread = threading.Thread(target=self.loop.run, daemon=True)
@@ -248,6 +252,9 @@ workspace.windowList().forEach(function(w) {
         if not any(browser in s.get("app", "").lower() for browser in ("chrome", "chromium", "brave")):
             return False
         title = str(s.get("title", "")).lower()
+        if getattr(self, "allow_action_popup", False) and title.startswith("eylem"):
+            # Onay akışı sırasında oyunun kendi popup'ı aktif pencere olabilir.
+            return True
         if is_game_title(title):
             return True
         # An item wiki window also names the game; only trust the loose name

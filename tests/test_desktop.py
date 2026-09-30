@@ -135,3 +135,18 @@ def test_a_missing_registry_is_not_an_error(monkeypatch, tmp_path):
     monkeypatch.setattr(desktop, 'SCRIPT_REGISTRY', tmp_path / 'gone.json')
     Desktop._prune_stale_scripts(helper)
     assert helper.unloads == []
+
+
+def test_action_popup_counts_as_game_during_confirm():
+    """Eylem onayı ayrı bir Brave penceresi açar; onay akışı sırasında (ve
+    yalnızca o sırada) aktif popup oyun penceresi sayılır."""
+    from desktop import Desktop
+    d = Desktop.__new__(Desktop)
+    d.allow_action_popup = False
+    d.state = {'app': 'brave', 'title': 'Eylem «Endarg Madalyonu Kullanma» - Brave Origin',
+               'window': 'w1', 'candidates': []}
+    assert not d.is_game_active()
+    d.allow_action_popup = True
+    assert d.is_game_active()
+    d.state['title'] = 'Ejderhalar Mirası - Brave Origin'
+    assert d.is_game_active()

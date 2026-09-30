@@ -56,15 +56,19 @@ class MouseController:
             return self._move_to(x, y)
 
     def _move_to(self, x, y):
-        gain = 1.8
-        for _ in range(30):
+        # İlk adım kalan mesafenin TAMAMI: eskisi 85 px'lik adımlarla yürüyüp
+        # buton yolculuğunu ~1.5 sn yapıyordu (kullanıcı: pat pat). İvme kazancı
+        # ölçülüp sonraki adımlar ona göre düzeltilir; tıklama öncesi 2.5 px
+        # tolerans kontrolü aynen korunur.
+        gain = 1.0
+        for _ in range(12):
             self._check()
             start = self.desktop.cursor()
             dx, dy = x - start[0], y - start[1]
             distance = math.hypot(dx, dy)
             if distance <= MOUSE_TOLERANCE:
                 return
-            factor = min(0.85 / gain, 85 / distance)
+            factor = min(1.0 / gain, 1.0)
             mx, my = round(dx * factor), round(dy * factor)
             if mx == my == 0:
                 if abs(dx) >= abs(dy):
@@ -73,12 +77,13 @@ class MouseController:
                     my = 1 if dy > 0 else -1
             self.desktop.updated.clear()
             self._run("mousemove", "-x", mx, "-y", my)
-            self.desktop.updated.wait(0.12)
-            time.sleep(0.015)
+            self.desktop.updated.wait(0.05)
+            time.sleep(0.005)
             end = self.desktop.cursor()
             actual = math.dist(start, end)
-            if actual:
-                gain = min(4.0, max(0.4, actual / math.hypot(mx, my)))
+            commanded = math.hypot(mx, my)
+            if actual and commanded:
+                gain = min(4.0, max(0.4, actual / commanded))
         # A relative Wayland move can occasionally lose a state update while
         # KWin is busy.  Treat that as a transient safety interruption instead
         # of an uncaught bot error: the caller will take a fresh screenshot and
