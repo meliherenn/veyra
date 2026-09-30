@@ -176,6 +176,7 @@ def test_failed_capture_never_reuses_previous_screenshot(monkeypatch):
             raise subprocess.TimeoutExpired('spectacle',5)
         return real_run(cmd,*a,**kw)
     monkeypatch.setattr(subprocess,'run',fail)
+    monkeypatch.setattr(detector,'_capture_portal',lambda: None)
     with pytest.raises(subprocess.TimeoutExpired):detector.capture()
     assert not image.exists()
     detector.close()

@@ -350,25 +350,25 @@ class HuntBot(FishingBot):
             raise InterruptedError(f'Dövüş ekranı değişti; {kind} düğmesine basılmadı.')
         self.control_guard()
 
-    def summon_guard(self, point):
-        """Çağırma tıklamasından önce: koruma/odak, dövüş sürüyor ve çubuk açık.
+    def summon_guard(self, point, frame=None):
+        """Çağırma tıklamasından önce: dur/pause, koruma, dövüş sürüyor, çubuk açık.
 
-        Slot kartı imleç altında parlayabildiği için slotun kendisi burada
-        yeniden aranmaz; çubuğun tamamı kapandıysa (harita/sonuç) durur.
+        Döngü zaten taze kareyle slotu yeniden bulduğu için burada ikinci bir
+        yakalama/detection zinciri çalışmaz (her tıklamayı ~1 sn yavaşlatıyordu);
+        koruma taraması eldeki kareyle yapılır.
         """
         self.control_guard()
-        if not self.desktop.is_game_active():
-            raise InterruptedError('Oyun odaktan çıktı; çağırma iptal edildi.')
-        fresh = self.detector.capture()
-        protected, reason = self.detector.check_bot_protection(fresh)
+        if frame is None:
+            frame = self.detector.capture()
+        protected, reason = self.detector.check_bot_protection(frame)
         if protected:
-            self.block(reason or 'Bot koruması.', fresh)
+            self.block(reason or 'Bot koruması.', frame)
             raise InterruptedError('Bot koruması; çağırma iptal edildi.')
-        if self.vision.result_button(fresh, self.scale_hint):
+        if self.vision.result_button(frame, self.scale_hint):
             raise InterruptedError('Dövüş çağırma bitmeden bitti; çağırma durduruldu.')
-        if self.detector.observe(fresh).layout is not None:
+        if self.detector.observe(frame).layout is not None:
             raise InterruptedError('Haritaya dönüldü; çağırma durduruldu.')
-        slots, locks = self.vision.summon_slots(fresh)
+        slots, locks = self.vision.summon_slots(frame)
         if not slots and not locks:
             raise InterruptedError('Çağırma çubuğu kapandı; çağırma durduruldu.')
         self.control_guard()
@@ -388,25 +388,32 @@ class HuntBot(FishingBot):
     def confirm_guard(self, point, threshold=0.70):
         """Onay tıklamasından hemen önce: koruma/odak; pencere hâlâ açık mı?
 
-        Düğme şablonu düşük eşikle ve noktanın çevresinde aranır: imleç
-        düğmenin üstüne gelince vurgu tam skoru düşürüyor olabilir.
+        Düğme şablonu noktanın çevresinde, şablondan büyük bir pencerede
+        aranır (dar bölge OpenCV assertion'ı ile botu düşürüyordu). İmleç
+        düğmenin üstündeyken vurgu skoru düşürebildiği için eşik düşüktür.
         """
         self.control_guard()
         if not self.desktop.is_game_active():
             raise InterruptedError('Oyun odaktan çıktı; onay verilmedi.')
-        fresh = self.detector.capture()
+        fresh = self.detector.capture_screen()
         protected, reason = self.detector.check_bot_protection(fresh)
         if protected:
             self.block(reason or 'Bot koruması.', fresh)
             raise InterruptedError('Bot koruması; onay verilmedi.')
-        fresh_h, fresh_w = fresh.shape[:2]
-        x0, x1 = max(0, point[0] - 20), min(fresh_w, point[0] + 20)
-        y0, y1 = max(0, point[1] - 20), min(fresh_h, point[1] + 20)
-        region = fresh[y0:y1, x0:x1]
         if self.vision.apply_template is None:
             return
-        res = cv2.matchTemplate(region, self.vision.apply_template, cv2.TM_CCOEFF_NORMED)
-        if float(res.max()) < threshold:
+        th, tw = self.vision.apply_template.shape[:2]
+        x0, x1 = max(0, point[0] - tw), min(fresh.shape[1], point[0] + tw)
+        y0, y1 = max(0, point[1] - th), min(fresh.shape[0], point[1] + th)
+        region = fresh[y0:y1, x0:x1]
+        if region.shape[0] < th or region.shape[1] < tw:
+            raise InterruptedError('Onay penceresi son kontrolde görünmedi.')
+        try:
+            score = float(cv2.matchTemplate(region, self.vision.apply_template,
+                                            cv2.TM_CCOEFF_NORMED).max())
+        except cv2.error as exc:
+            raise InterruptedError('Onay penceresi okunamadı; yeniden denenecek.') from exc
+        if score < threshold:
             raise InterruptedError('Onay penceresi son kontrolde görünmedi.')
 
     def confirm_pending_action(self, window=2.0):
@@ -511,7 +518,8 @@ class HuntBot(FishingBot):
                     break
                 unchanged = 0
                 self.mouse.click(*self.pixel_to_desktop((slot[0], slot[1]), fresh),
-                                 before_click=lambda p=(slot[0], slot[1]): self.summon_guard(p))
+                                 before_click=lambda p=(slot[0], slot[1]), f=fresh:
+                                 self.summon_guard(p, f))
                 summoned += 1
                 previous_mask = mask
                 METRICS.bump('summon')

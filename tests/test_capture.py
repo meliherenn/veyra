@@ -51,12 +51,31 @@ def test_capture_returns_the_window_and_records_its_region(monkeypatch):
     detector.close()
 
 
-def test_capture_falls_back_to_the_screenshot_when_the_window_is_gone(monkeypatch):
-    screenshot = np.zeros((1080, 1920, 3), np.uint8)
+def test_capture_falls_back_to_portal_then_screenshot_when_window_is_gone(monkeypatch):
+    """X11 yolu yokken sıra: portal (~0.18 sn) → spectacle (~0.4 sn). Portal
+    başarısızsa spectacle aynen kullanılır; ikisi de yoksa hata yükselir."""
+    portal_frame = np.full((1080, 1920, 3), 7, np.uint8)
     detector = ScreenDetector(grabber=FakeGrabber(None))
-    monkeypatch.setattr(detector, "_capture_spectacle", lambda: screenshot)
-    assert detector.capture() is screenshot
+    monkeypatch.setattr(detector, "_capture_portal", lambda: portal_frame)
+    assert detector.capture() is portal_frame
+    assert detector.capture_rect == (0, 0, 1920, 1080)
+
+    spectacle = np.zeros((1080, 1920, 3), np.uint8)
+    monkeypatch.setattr(detector, "_capture_portal", lambda: None)
+    monkeypatch.setattr(detector, "_capture_spectacle", lambda: spectacle)
+    assert detector.capture() is spectacle
     assert detector.capture_rect is None
+    detector.close()
+
+
+def test_portal_failure_never_breaks_capture(monkeypatch):
+    detector = ScreenDetector(grabber=FakeGrabber(None))
+    def boom():
+        raise InterruptedError('Portal yanıt vermedi.')
+    monkeypatch.setattr(detector, "_capture_portal", boom)
+    spectacle = np.ones((1080, 1920, 3), np.uint8)
+    monkeypatch.setattr(detector, "_capture_spectacle", lambda: spectacle)
+    assert detector.capture() is spectacle
     detector.close()
 
 
@@ -84,3 +103,54 @@ def test_pixel_to_desktop_without_a_region_uses_the_whole_screen(monkeypatch, tm
     frame = np.zeros((1080, 1920, 3), np.uint8)
     assert bot.pixel_to_desktop((400, 500), frame) == (400, 500)
     assert bot.desktop_scale(frame) == 1.0
+
+
+class _Geom:
+    width = 800
+    height = 600
+
+
+class _FakeWindow:
+    def get_attributes(self):
+        from types import SimpleNamespace
+        return SimpleNamespace(map_state=2)  # IsViewable
+
+    def get_geometry(self):
+        return _Geom()
+
+    def get_image(self, *args):
+        w, h = _Geom.width, _Geom.height
+        data = bytearray(w * h * 4)
+        for i in range(w * h):
+            data[i * 4] = 255        # B
+            data[i * 4 + 2] = 40     # R
+            data[i * 4 + 3] = 255    # A
+        from types import SimpleNamespace
+        return SimpleNamespace(data=bytes(data))
+
+
+def test_partial_window_is_grabbed_when_fullscreen_is_off(monkeypatch):
+    """Kullanıcı oyun penceresini boyutlandırdığında X11 yolu 'tam ekran
+    değil' deyip her karede spectacle'a (~0.4 sn) düşüyordu; kısmi pencere
+    artık capture_rect ile yakalanır."""
+    from types import SimpleNamespace
+    from x11grab import X11Grabber
+    grabber = X11Grabber(fullscreen_only=False)
+    fake = _FakeWindow()
+    monkeypatch.setattr(grabber, '_locate', lambda: fake)
+    monkeypatch.setattr(grabber, '_origin', lambda window: (10, 20))
+    out = grabber.grab()
+    assert out is not None
+    frame, rect = out
+    assert rect == (10, 20, 800, 600)
+    assert frame.shape == (600, 800, 3)
+
+
+def test_fullscreen_only_grabber_still_rejects_partial_windows(monkeypatch):
+    from types import SimpleNamespace
+    from x11grab import X11Grabber
+    grabber = X11Grabber(fullscreen_only=True)
+    fake = _FakeWindow()
+    monkeypatch.setattr(grabber, '_locate', lambda: fake)
+    monkeypatch.setattr(grabber, '_covers_screen', lambda rect: False)
+    assert grabber.grab() is None

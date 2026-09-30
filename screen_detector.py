@@ -30,6 +30,89 @@ except ImportError:          # python-xlib is optional; spectacle still works
 _DEFAULT_GRABBER = object()
 
 
+def _xdg_pictures_dir():
+    """Kullanıcının Resimler klasörü; portal kareyi oraya yazar."""
+    conf = Path('~/.config/user-dirs.dirs').expanduser()
+    try:
+        for line in conf.read_text().splitlines():
+            stripped = line.strip()
+            if stripped.startswith('XDG_PICTURES_DIR'):
+                raw = stripped.split('=', 1)[1].strip().strip('"')
+                return Path(os.path.expandvars(raw))
+    except OSError:
+        pass
+    return Path('~/Resimler').expanduser()
+
+
+class PortalCapture:
+    """org.freedesktop.portal.Screenshot ile tam ekran kare.
+
+    Brave Wayland-native çalıştığında X11 pencere yakalama oyunu hiç göremez;
+    spectacle da ~0.4 sn/kare alır. Portal, KWin'in yetkili ekran görüntüsü
+    yolunu kullanır (~0.18 sn/kare) ve dosyayı Resimler klasörüne yazar;
+    kare okunduktan sonra dosya silinir.
+    """
+
+    def __init__(self):
+        import dbus
+        import urllib.parse
+        self._dbus = dbus
+        self._urllib_parse = urllib.parse
+        self.bus = dbus.SessionBus()
+        self.portal = dbus.Interface(
+            self.bus.get_object('org.freedesktop.portal.Desktop',
+                                '/org/freedesktop/portal/desktop'),
+            'org.freedesktop.portal.Screenshot')
+        self.shot_dir = _xdg_pictures_dir()
+
+    def shoot(self, timeout=3.0):
+        prev = self._newest_shot()
+        self.portal.Screenshot('', {
+            'handle_token': self._dbus.String(f'dwar{time.monotonic_ns() % 1000000000}'),
+            'interactive': self._dbus.Boolean(False),
+        })
+        deadline = time.monotonic() + timeout
+        path = None
+        while time.monotonic() < deadline:
+            current = self._newest_shot()
+            if current is not None and current != prev:
+                path = self.shot_dir / current
+                break
+            time.sleep(0.015)
+        if path is None:
+            raise InterruptedError('Portal ekran görüntüsü zamanında gelmedi.')
+        last = -1
+        while time.monotonic() < deadline:
+            try:
+                size = path.stat().st_size
+            except OSError:
+                size = 0
+            if size == last and size > 0:
+                break
+            last = size
+            time.sleep(0.02)
+        try:
+            with Image.open(path) as image:
+                return np.array(image.convert('RGB'))
+        finally:
+            try:
+                path.unlink()
+            except OSError:
+                pass
+
+    def _newest_shot(self):
+        try:
+            files = [f for f in os.listdir(self.shot_dir) if f.lower().endswith('.png')]
+        except OSError:
+            return None
+        if not files:
+            return None
+        return max(files, key=lambda f: os.path.getmtime(self.shot_dir / f))
+
+
+_PORTAL_CAPTURE = None
+
+
 def normalized(text):
     text = text.lower().replace("ı", "i")
     return " ".join("".join(c for c in unicodedata.normalize("NFKD", text)
@@ -93,7 +176,12 @@ class ScreenDetector:
         # Reading the Xwayland window is ~4 ms against ~500 ms for spectacle,
         # and it never opens a dialog. A grabber of None forces the slow path.
         if grabber is _DEFAULT_GRABBER:
-            self.grabber = X11Grabber() if X11Grabber else None
+            # fullscreen_only=False: oyun penceresi tam ekranı KAPLAMADIĞINDA da
+            # yakalanır. Eskisi yalnız tam ekranı kabul ediyordu; kullanıcı
+            # pencereyi boyutlandırınca X11 yolu her karede None dönüp
+            # spectacle'a (~0.4 sn/kare) düşüyordu ve bot dişleriyle geliyordu.
+            # Koordinatlar capture_rect ile masaüstüne ölçeklenir.
+            self.grabber = X11Grabber(fullscreen_only=False) if X11Grabber else None
         else:
             self.grabber = grabber
         self.harvest_templates = []
@@ -124,8 +212,16 @@ class ScreenDetector:
                 METRICS.bump('capture_x11')
                 frame, self.capture_rect = grabbed
             else:
-                METRICS.bump('capture_spectacle')
-                frame, self.capture_rect = self._capture_spectacle(), None
+                try:
+                    portal = self._capture_portal()
+                except Exception:
+                    portal = None
+                if portal is not None:
+                    METRICS.bump('capture_portal')
+                    frame, self.capture_rect = portal, (0, 0, portal.shape[1], portal.shape[0])
+                else:
+                    METRICS.bump('capture_spectacle')
+                    frame, self.capture_rect = self._capture_spectacle(), None
         if frame.shape[0] < 200 or frame.shape[1] < 400:
             raise RuntimeError("Ekran görüntüsü boyutu geçersiz; tıklama yapılmadı.")
         return frame
@@ -134,7 +230,7 @@ class ScreenDetector:
         """Tam ekran karesı: oyunun ÜSTÜNE açılan ayrı pencereleri de içerir.
 
         Eylem onayı ('Eylem «...»') ayrı bir tarayıcı penceresidir; oyun
-        penceresi karesı onu içermez. spectacle yolu zaten tam ekran döner.
+        penceresi karesı onu içermez. Portal ve spectacle tam ekran döner.
         """
         with METRICS.span('capture'):
             grabbed = self.grabber.grab_root() if self.grabber is not None else None
@@ -142,11 +238,37 @@ class ScreenDetector:
                 METRICS.bump('capture_root')
                 frame, self.capture_rect = grabbed
             else:
-                METRICS.bump('capture_spectacle')
-                frame, self.capture_rect = self._capture_spectacle(), None
+                try:
+                    portal = self._capture_portal()
+                except Exception:
+                    portal = None
+                if portal is not None:
+                    METRICS.bump('capture_portal')
+                    frame, self.capture_rect = portal, (0, 0, portal.shape[1], portal.shape[0])
+                else:
+                    METRICS.bump('capture_spectacle')
+                    frame, self.capture_rect = self._capture_spectacle(), None
         if frame.shape[0] < 200 or frame.shape[1] < 400:
             raise RuntimeError("Ekran görüntüsü boyutu geçersiz; tıklama yapılmadı.")
         return frame
+
+    def _capture_portal(self):
+        """XDG portal ekran görüntüsü: X11 yolu yokken (Wayland-native
+        tarayıcı) spectacle'ın yarısı sürede tam ekran kare verir (~180 ms).
+        Dosya Resimler klasörüne yazılır, okunduktan sonra silinir. Herhangi
+        bir sorunca None: spectacle yolu aynen çalışır."""
+        global _PORTAL_CAPTURE
+        if _PORTAL_CAPTURE is None:
+            try:
+                _PORTAL_CAPTURE = PortalCapture()
+            except Exception:
+                _PORTAL_CAPTURE = False
+        if _PORTAL_CAPTURE is False:
+            return None
+        try:
+            return _PORTAL_CAPTURE.shoot()
+        except Exception:
+            return None
 
     def _capture_spectacle(self):
         path = self.path / "screen.png"

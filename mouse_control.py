@@ -61,7 +61,7 @@ class MouseController:
         # ölçülüp sonraki adımlar ona göre düzeltilir; tıklama öncesi 2.5 px
         # tolerans kontrolü aynen korunur.
         gain = 1.0
-        for _ in range(12):
+        for _ in range(10):
             self._check()
             start = self.desktop.cursor()
             dx, dy = x - start[0], y - start[1]
@@ -75,10 +75,10 @@ class MouseController:
                     mx = 1 if dx > 0 else -1
                 else:
                     my = 1 if dy > 0 else -1
-            self.desktop.updated.clear()
             self._run("mousemove", "-x", mx, "-y", my)
-            self.desktop.updated.wait(0.05)
-            time.sleep(0.005)
+            # KWin imleç raporu genelde bu sürede gelir; rapor gecikirse kazanç
+            # bir sonraki adımda öğrenilir, döngü yine de kısa sürer.
+            time.sleep(0.01)
             end = self.desktop.cursor()
             actual = math.dist(start, end)
             commanded = math.hypot(mx, my)
