@@ -273,7 +273,7 @@ def test_confirm_apply_clicks_the_dialog_button(mocked):
     bot.detector.capture_screen.return_value = np.zeros((1080, 1920, 3), np.uint8)
     bot.detector.protection_template.return_value = False
     apply_point = (960, 540)
-    bot.vision.confirm_apply_button.return_value = apply_point
+    bot.vision.confirm_apply_button.side_effect = [apply_point, None]
     bot.detector.check_bot_protection.return_value = (False, '')
     assert bot.confirm_pending_action(window=1.0) is True
     assert bot.desktop.allow_action_popup is False  # akış sonunda izin kapanır
@@ -281,6 +281,7 @@ def test_confirm_apply_clicks_the_dialog_button(mocked):
     assert bot.mouse.click.call_args.args[:2] == main_module_pixel(bot, apply_point)
     # Pencere hiç çıkmazsa False döner, tıklama gitmez.
     bot.mouse.reset_mock()
+    bot.vision.confirm_apply_button.side_effect = None
     bot.vision.confirm_apply_button.return_value = None
     assert bot.confirm_pending_action(window=0.4) is False
     bot.mouse.click.assert_not_called()

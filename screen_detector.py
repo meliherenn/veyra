@@ -233,18 +233,21 @@ class ScreenDetector:
         penceresi karesı onu içermez. Portal ve spectacle tam ekran döner.
         """
         with METRICS.span('capture'):
-            grabbed = self.grabber.grab_root() if self.grabber is not None else None
-            if grabbed is not None:
-                METRICS.bump('capture_root')
-                frame, self.capture_rect = grabbed
+            # Portal önce: X11 kök karesı compositor'da popup/oyun içermeyebilir,
+            # portal her zaman gerçek bileşik ekranı verir (~0.18 sn).
+            portal = None
+            try:
+                portal = self._capture_portal()
+            except Exception:
+                portal = None
+            if portal is not None:
+                METRICS.bump('capture_portal')
+                frame, self.capture_rect = portal, (0, 0, portal.shape[1], portal.shape[0])
             else:
-                try:
-                    portal = self._capture_portal()
-                except Exception:
-                    portal = None
-                if portal is not None:
-                    METRICS.bump('capture_portal')
-                    frame, self.capture_rect = portal, (0, 0, portal.shape[1], portal.shape[0])
+                grabbed = self.grabber.grab_root() if self.grabber is not None else None
+                if grabbed is not None:
+                    METRICS.bump('capture_root')
+                    frame, self.capture_rect = grabbed
                 else:
                     METRICS.bump('capture_spectacle')
                     frame, self.capture_rect = self._capture_spectacle(), None

@@ -497,33 +497,56 @@ class HuntBot(FishingBot):
         """Eylem onay penceresi ('...onaylayın') açıldıysa Uygula'ya basar.
 
         Onay, oyunun ÜSTÜNE açılan AYRI bir tarayıcı penceresidir: kare tam
-        ekrandan alınır ve popup aktifken fare izni kapsamlı açılır (aksi
-        halde 'oyun odakta değil' ile tıklama yarım kalırdı). Pencere yoksa
-        window süresi kadar bakınır ve False döner.
+        ekrandan alınır ve popup aktifken fare izni kapsamlı açılır. 'Verildi'
+        ancak pencerenin kapandığı görülerek söylenir; Uygula tıklaması
+        kayıtsız kalırsa (İptal ile karışma, odak kaybı) pencere süresi
+        içinde yeniden denenir.
         """
         deadline = time.monotonic() + window
+        clicked = False
         self.desktop.allow_action_popup = True
         try:
             while time.monotonic() < deadline:
                 fresh = self.detector.capture_screen()
                 button = self.vision.confirm_apply_button(fresh)
-                if button:
-                    self.mouse.click(*self.pixel_to_desktop(button, fresh),
-                                     before_click=lambda p=button: self.confirm_guard(p))
-                    METRICS.bump('confirm_apply')
-                    self.notice('Eylem onayı Uygula ile verildi.')
-                    time.sleep(0.6)
-                    return True
-                time.sleep(0.25)
+                if button is None:
+                    if clicked:
+                        METRICS.bump('confirm_apply')
+                        self.notice('Eylem onayı Uygula ile verildi.')
+                        return True
+                    time.sleep(0.25)
+                    continue
+                self.mouse.click(*self.pixel_to_desktop(button, fresh),
+                                 before_click=lambda p=button: self.confirm_guard(p))
+                clicked = True
+                time.sleep(0.3)
         finally:
             self.desktop.allow_action_popup = False
+        if clicked:
+            self.notice('Onay penceresi kapanmadı; bekleyen onay yeniden denenir.')
         return False
+
+    def _enabled_fight_kinds(self):
+        return [kind for kind, enabled in (('provoke', self.provoke),
+                                           ('auto', self.auto_battle),
+                                           ('mount', self.mount_summon)) if enabled]
 
     def perform_fight_actions(self):
         """Dövüş başladıktan sonra bir kez: provokasyon -> oto savaş -> binek."""
         self.actions_done_at = time.monotonic()
         time.sleep(HUNT_FIGHT_SETTLE_SECONDS)
         frame = self.detector.capture()
+        kinds = self._enabled_fight_kinds()
+        # Araç çubuğu dövüşle birlikte animasyonla gelir; ilk karede
+        # görünmeyebilir (provoke 'görünmüyor' sanılıp kalıcı atlanmıştı).
+        deadline = time.monotonic() + _cfg.HUNT_TOOLBAR_WAIT_SECONDS
+        while kinds and time.monotonic() < deadline and not any(
+                self.vision.fight_button(frame, k) for k in kinds):
+            time.sleep(0.4)
+            frame = self.detector.capture()
+        if kinds and not any(self.vision.fight_button(frame, k) for k in kinds):
+            self.notice('Dövüş araç çubuğu görünmedi; dövüş eylemleri atlandı.')
+            return
         if self.provoke:
             try:
                 self.run_provoke(frame)

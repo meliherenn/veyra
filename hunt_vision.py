@@ -306,16 +306,33 @@ class HuntVision:
     def confirm_apply_button(self, frame, threshold=0.86):
         """Eylem onay penceresindeki 'Uygula' düğmesinin merkezi; yoksa None.
 
-        Binek çağırma gibi eylemler oyunun standart onay penceresini açar
-        ('...eyleminin gerçekleştirilmesini onaylayın' — Uygula / İptal).
-        Düğme resmi iksir onayıyla aynıdır; küçük ölçek farklarına tolerans
-        için çok ölçekli aranır.
+        Uygula ve İptal aynı süslü düğme resmini kullandığı için yalnız şablon
+        skoru İptal'i de yakalayabilir: her aday OCR ile okunur ve yalnızca
+        'uygula' yazanı döner. Okunamayan adaylara dokunulmaz (İptal'e basmak
+        eylemi iptal eder); döngü bir sonraki karede yeniden dener.
         """
         if self.apply_template is None:
             return None
-        score, center = self._best_match(frame, self.apply_template,
-                                         scales=(1.0, 0.9, 1.1, 0.8, 1.2))
-        return center if score >= threshold else None
+        th, tw = self.apply_template.shape[:2]
+        cands = []
+        for scale in (1.0, 0.9, 1.1, 0.8, 1.2):
+            t = self.apply_template if scale == 1.0 else cv2.resize(
+                self.apply_template, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+            if t.shape[0] >= frame.shape[0] or t.shape[1] >= frame.shape[1]:
+                continue
+            res = cv2.matchTemplate(frame, t, cv2.TM_CCOEFF_NORMED)
+            ys, xs = np.where(res >= threshold)
+            for x, y in sorted(zip(xs.tolist(), ys.tolist())):
+                if all(abs(x - kx) > tw // 3 or abs(y - ky) > th // 3 for kx, ky, _s in cands):
+                    cands.append((x, y, scale))
+        for x, y, _scale in cands:
+            crop = frame[max(0, y):y + th, max(0, x):x + tw]
+            if crop.size == 0:
+                continue
+            text = self.detector.ocr(crop, psm=7, scale=3, label='confirm')
+            if 'uygula' in text.lower():
+                return (x + tw // 2, y + th // 2)
+        return None
 
     @staticmethod
     def _teal_mask(region):

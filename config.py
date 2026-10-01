@@ -133,6 +133,9 @@ HUNT_FIGHT_SETTLE_SECONDS = 1.0
 # Çağırma slotu: sayaç "kullanilan/limit" yazar; tıklama sonrası sayaç
 # pikselleri değişmezse (jeton bitti / sınır doldu) o slotta durulur.
 HUNT_SUMMON_MAX_PER_SLOT = 20
+# Dövüş araç çubuğu dövüşle birlikte animasyonla gelir; ilk karede
+# görünmeyebilir. Eylemlerden önce bu süre kadar aranır.
+HUNT_TOOLBAR_WAIT_SECONDS = 6.0
 # Odağı kaybedilen onay penceresi için dövüş boyunca en fazla kaç yeniden
 # Uygula denemesi yapılır (her deneme arası ~1 sn bakılır).
 HUNT_CONFIRM_RETRIES = 4
