@@ -99,3 +99,15 @@ Doğrulama: **210 test geçti** (204 → 210; deniz yönü 4, kurtarma1, panel1 
 - Doğrulama: **261 test geçti** (2 atlanan); canlıda iki dövüş uçtan uca tamamlandı
   (seçim, iki kez ad doğrulaması, "Ava" dönüşü). Dövüş içi eylemlerin canlı denemesi
   ilk koşuda yapılacak. Ayrıntı `VERIFICATION.md` içinde.
+
+## v9 - Arayüz yeniden düzenlendi: açılışta mod seçimi, ayrı Meslek / Avlan sayfaları (1 Ekim)
+
+Motor (görüntü okuma, tıklama güvenliği, dövüş akışı) değişmedi; yalnızca panel (`gui.py`) yeniden kuruldu.
+
+- **Açılış ekranı:** uygulama önce "Meslek / Avlan" kartlarıyla açılır, seçilen modun kendi sayfası gelir. Son kullanılan mod işaretlenir; "← Mod seç" ile dönülür (bot çalışırken kapalı). Çalışan botun üstüne panel açılırsa doğrudan o modun sayfasına gidilir.
+- **Avlan sayfası:** üç sütun — Av hedefi (liste, ekle/kaldır, seviye), Dövüş seçenekleri (yeşil Otomatik savaş, kırmızı Binek, mor Provokasyon; her biri tikli kutu), İzleme (durum, günlük, başlat/duraklat/durdur). Provokasyon açıkken 5 slot için − / + sayaçlarıyla "hangi slottan kaç yaratık" seçilir; kapalıyken slot alanı pasiftir. Üst sınır `HUNT_SUMMON_MAX_PER_SLOT`.
+- **Haritaya göre yaratık listesi:** bot bir yaratığa saldırmadan önce adı iki aşamada doğrulanır; yeni ad `runtime/creatures.json` içine yazılır ve panelde işaretlenmemiş kutu olarak belirir. "Kaldır" kalıcı olarak unutturur. Seviye eki (`[7]`) ayıklanır, katalog türleri ve çok kısa adlar yazılmaz.
+- **Meslek sayfası** eski düzeniyle aynı; yalnızca mod radyoları ve av kartı kaldırıldı, ortak parçalar (durum, günlük, düğmeler, genel ayarlar) aktif sayfaya taşınıyor.
+- Onay kutuları gerçek ✓ simgesiyle (`assets/check.png`), sayısal alanlar − / + düğmeleriyle.
+- Testler: `tests/test_gui.py` +4 (açılış ekranı, çalışırken atlama, provokasyon slotları, öğrenilen yaratıklar), `tests/test_hunt.py` +1 (yaratık belleği). Eski "balık tablosu av modunda kilitlenir" testi sayfa geçişine göre güncellendi.
+- Açık nokta: dövüş içi eylemlerin canlı sınavı bu sürümde de kullanıcıda; arayüz değişikliği tıklama yolunu etkilemez.

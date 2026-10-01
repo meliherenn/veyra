@@ -22,7 +22,7 @@ from config import (POLL_INTERVAL, SELECT_TIMEOUT, TARGET_RETRY_SECONDS, NO_FISH
                     HUNT_PROVOKE_BAR_TIMEOUT, HUNT_SUMMON_CLICK_PAUSE,
                     HUNT_FIGHT_SETTLE_SECONDS, HUNT_SUMMON_MAX_PER_SLOT,
                     HUNT_CONFIRM_RETRIES)
-from hunt_catalog import KNOWN, match_species, name_score, resolve_requested
+from hunt_catalog import KNOWN, match_species, name_score, remember_seen, resolve_requested
 from hunt_vision import HuntVision
 import main
 from main import FishingBot
@@ -568,6 +568,9 @@ class HuntBot(FishingBot):
                 self.confirm_retries = 0
                 self.last_confirm_check = 0.0
                 self.note_selection_success()
+                if self.target.name and self.target.species_id is None:
+                    if remember_seen(main.RUNTIME / 'creatures.json', self.target.name):
+                        self.notice(f'Yeni yaratık panelin listesine eklendi: {self.target.name.title()}.')
                 self.notice(f'{self.target.name.title()} [{self.target.level}] doğrulandı; saldırılıyor ({self.attempts}).')
                 return
             if verdict is False and now - self.since > 1:

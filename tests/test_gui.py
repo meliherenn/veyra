@@ -167,12 +167,16 @@ def test_hunt_mode_requires_a_creature(panel):
 def test_hunt_mode_shares_limits_and_restores_fishing_controls(panel):
     panel.mode_hunt.setChecked(True)
     panel.auto_battle_cb.setChecked(False);panel.mount_cb.setChecked(False);panel.provoke_cb.setChecked(False)
-    assert not panel.table.isEnabled() and not panel.auto_splinter.isEnabled()
+    # Av modunda balıkçılık sayfası gösterilmez; ortak sınırlar av sayfasına taşınır.
+    assert panel.stack.currentWidget() is panel.hunt_page
+    assert not panel.table.isVisible()
+    assert panel.hunt_page.isAncestorOf(panel.general_card)
     panel.cycle_limit.setValue(5);panel.auto_scroll.setChecked(False)
     assert panel.worker_command()[1:]==['--hunt','--creatures','maharetli_fitsilya','krogan',
                                         '--no-scroll','--max-cycles','5']
     panel.mode_fishing.setChecked(True)
-    assert panel.table.isEnabled()
+    assert panel.stack.currentWidget() is panel.fishing_page
+    assert panel.fishing_page.isAncestorOf(panel.general_card)
     assert panel.worker_command()[1:]==['--colors','yesil','--no-scroll','--max-cycles','5']
 
 
@@ -198,3 +202,52 @@ def test_hunt_preferences_survive_a_restart(tmp_path,app):
     assert reopened.provoke_cb.isChecked()
     assert [spin.value() for spin in reopened.provoke_spins]==[2,0,1,0,0]
     reopened.hide();reopened.deleteLater();app.processEvents()
+
+
+def test_panel_opens_on_mode_chooser_and_cards_pick_the_page(panel):
+    """Uygulama açılınca önce Meslek / Avlan seçimi gelir; kart seçilen modun sayfasını açar."""
+    assert panel.stack.currentWidget() is panel.launcher_page
+    assert not panel.back_button.isVisibleTo(panel)
+    panel.card_hunt.click()
+    assert panel.mode_hunt.isChecked() and panel.stack.currentWidget() is panel.hunt_page
+    assert panel.back_button.isVisibleTo(panel)
+    panel.show_launcher()
+    assert panel.stack.currentWidget() is panel.launcher_page
+    panel.card_fishing.click()
+    assert panel.mode_fishing.isChecked() and panel.stack.currentWidget() is panel.fishing_page
+
+
+def test_panel_skips_chooser_when_a_hunt_is_already_running(tmp_path,app):
+    window=gui.ControlWindow(tmp_path,status_reader=lambda:{'running':True,'mode':'hunt','pid':1})
+    window.timer.stop()
+    assert window.stack.currentWidget() is window.hunt_page
+    window.hide();window.deleteLater();app.processEvents()
+
+
+def test_provoke_slots_follow_the_checkbox_and_total_is_shown(panel):
+    panel.mode_hunt.setChecked(True)
+    panel.provoke_cb.setChecked(False)
+    assert not panel.provoke_row.isEnabled()
+    panel.provoke_cb.setChecked(True)
+    assert panel.provoke_row.isEnabled()
+    for spin,value in zip(panel.provoke_spins,(3,4,0,2,0)):spin.setValue(value)
+    assert '9' in panel.provoke_total.text()
+    assert panel.provoke_spins[0].maximum()==gui.HUNT_SUMMON_MAX_PER_SLOT
+
+
+def test_creatures_learned_by_the_bot_appear_unchecked_in_the_list(panel):
+    import hunt_catalog
+    path=panel.runtime/'creatures.json'
+    assert hunt_catalog.remember_seen(path,'yasli phadd ayisi')
+    assert not hunt_catalog.remember_seen(path,'Yasli Phadd Ayisi')   # tekrar yazılmaz
+    assert not hunt_catalog.remember_seen(path,'Krogan')               # katalog türü yazılmaz
+    panel.sync_seen_creatures()
+    box=panel.hunt_checks['yasli_phadd_ayisi']
+    assert not box.isChecked() and box.text()=='Yasli Phadd Ayisi'
+    panel.mode_hunt.setChecked(True)
+    panel.auto_battle_cb.setChecked(False);panel.mount_cb.setChecked(False);panel.provoke_cb.setChecked(False)
+    box.setChecked(True)
+    assert panel.worker_command()[-1]=='Yasli Phadd Ayisi'
+    panel.hunt_input.setText('Yasli Phadd Ayisi');panel.hunt_remove_creature()
+    assert 'yasli_phadd_ayisi' not in panel.hunt_checks
+    assert hunt_catalog.load_seen(path)==[]

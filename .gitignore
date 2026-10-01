@@ -40,3 +40,6 @@ backups/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Çalışma verileri (günlükler, ekran görüntüleri, tercihler) depoya girmesin
+runtime/

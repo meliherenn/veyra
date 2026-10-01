@@ -107,3 +107,62 @@ def resolve_requested(values):
         if species not in chosen:
             chosen.append(species)
     return tuple(chosen), False
+
+
+# --------------------------------------------------------------- görülen yaratıklar
+# Her Avlan haritasında farklı yaratıklar çıkar. Bot bir yaratığa (iki aşamalı ad
+# doğrulamasından sonra) saldırdığında adını burada biriktirir; panel bunları
+# işaretlenebilir kutu olarak gösterir. Böylece bir haritayı bir kez "Tüm yaratıklar"
+# ile gezdikten sonra o haritanın türleri tek tek seçilebilir hale gelir.
+def load_seen(path) -> list[str]:
+    """runtime/creatures.json içindeki özgün yaratık adları (sıra korunur)."""
+    import json
+    try:
+        data = json.loads(open(path, encoding='utf-8').read())
+    except (OSError, ValueError):
+        return []
+    names, keys = [], set()
+    for name in data if isinstance(data, list) else []:
+        name = str(name).strip()
+        key = slug(name)
+        if key and key not in keys:
+            keys.add(key)
+            names.append(name)
+    return names
+
+
+def remember_seen(path, name: str) -> bool:
+    """Adı kaydet. Yeni ise True. Bilinen/çok kısa/anlamsız adlar yazılmaz."""
+    import json
+    import os
+    name = ' '.join(parse_label(str(name or ''))[0].split()).strip()   # '[7]' seviye ekini at
+    key = slug(name)
+    if len(key) < 3 or any(key == s.id for s in KNOWN):
+        return False
+    names = load_seen(path)
+    if any(slug(n) == key for n in names):
+        return False
+    names.append(name.title() if name == name.lower() else name)
+    tmp = str(path) + '.tmp'
+    try:
+        with open(tmp, 'w', encoding='utf-8') as handle:
+            json.dump(names, handle, ensure_ascii=False, indent=2)
+        os.replace(tmp, path)
+    except OSError:
+        return False
+    return True
+
+
+def forget_seen(path, name: str) -> None:
+    """Listeden kaldırılan yaratığı kalıcı olarak da unut."""
+    import json
+    import os
+    key = slug(name)
+    kept = [n for n in load_seen(path) if slug(n) != key]
+    tmp = str(path) + '.tmp'
+    try:
+        with open(tmp, 'w', encoding='utf-8') as handle:
+            json.dump(kept, handle, ensure_ascii=False, indent=2)
+        os.replace(tmp, path)
+    except OSError:
+        pass

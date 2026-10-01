@@ -664,3 +664,15 @@ def test_new_attack_rearms_fight_actions(mocked):
     bot.vision.selected_name.return_value = 'krogan od'
     bot.tick()
     assert bot.attempts == 1 and bot.fight_actions_done is False
+
+
+def test_seen_creature_memory_ignores_catalog_noise_and_duplicates(tmp_path):
+    import hunt_catalog
+    path = tmp_path / 'creatures.json'
+    assert hunt_catalog.remember_seen(path, 'kara orman kurdu [7]')
+    assert not hunt_catalog.remember_seen(path, 'Kara Orman Kurdu')
+    assert not hunt_catalog.remember_seen(path, 'ab')
+    assert not hunt_catalog.remember_seen(path, 'Krogan')
+    assert hunt_catalog.load_seen(path) == ['Kara Orman Kurdu']
+    hunt_catalog.forget_seen(path, 'kara orman kurdu')
+    assert hunt_catalog.load_seen(path) == []
