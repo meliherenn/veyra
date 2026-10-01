@@ -315,7 +315,7 @@ class HuntVision:
             return None
         th, tw = self.apply_template.shape[:2]
         cands = []
-        for scale in (1.0, 0.9, 1.1, 0.8, 1.2):
+        for scale in (1.0, 0.9, 1.1, 0.8, 1.2, 0.7, 1.3):
             t = self.apply_template if scale == 1.0 else cv2.resize(
                 self.apply_template, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
             if t.shape[0] >= frame.shape[0] or t.shape[1] >= frame.shape[1]:

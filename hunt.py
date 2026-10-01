@@ -540,8 +540,8 @@ class HuntBot(FishingBot):
         # Araç çubuğu dövüşle birlikte animasyonla gelir; ilk karede
         # görünmeyebilir (provoke 'görünmüyor' sanılıp kalıcı atlanmıştı).
         deadline = time.monotonic() + _cfg.HUNT_TOOLBAR_WAIT_SECONDS
-        while kinds and time.monotonic() < deadline and not any(
-                self.vision.fight_button(frame, k) for k in kinds):
+        while kinds and time.monotonic() < deadline and not all(
+                self.vision.fight_button(frame, k) is not None for k in kinds):
             time.sleep(0.4)
             frame = self.detector.capture()
         if kinds and not any(self.vision.fight_button(frame, k) for k in kinds):
@@ -559,8 +559,35 @@ class HuntBot(FishingBot):
             frame = self.capture_parked(frame)
         if self.mount_summon:
             if self.click_fight_button(frame, 'mount', 'Binek çağırılıyor.'):
-                self.confirm_pending_action()
+                self.confirm_pending_action(3.5)
         self.actions_done_at = time.monotonic()
+
+    def _await_slot(self, anchor_x, seconds=1.5):
+        """Çubuk animasyon geçişinde kaybolduğunda slotun geri gelmesini bekler."""
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            time.sleep(0.3)
+            fresh = self.detector.capture()
+            current, _locks = self.vision.summon_slots(fresh)
+            slot = next((s for s in current if abs(s[0] - anchor_x) <= 10), None)
+            if slot is not None:
+                return slot, fresh
+        return None, None
+
+    def _await_counter_change(self, anchor_x, previous_mask, seconds=1.6):
+        """Tıklamanın işlenmesini bekler: sayaç değişirse yeni maskayı, değişmezse None döner."""
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            time.sleep(0.35)
+            fresh = self.detector.capture()
+            current, _locks = self.vision.summon_slots(fresh)
+            slot = next((s for s in current if abs(s[0] - anchor_x) <= 10), None)
+            if slot is None:
+                continue
+            mask = self.vision.counter_mask(fresh, slot[2])
+            if mask is not None and not np.array_equal(mask, previous_mask):
+                return mask
+        return None
 
     def run_provoke(self, frame):
         """Provokasyonu aç, çağırma çubuğunu bekle, slot sırasına göre çağır.
@@ -598,7 +625,6 @@ class HuntBot(FishingBot):
                 continue
             anchor_x = slots[index][0]
             previous_mask = None
-            unchanged = 0
             summoned = 0
             while summoned < wanted:
                 with METRICS.span('summon_capture'):
@@ -606,20 +632,22 @@ class HuntBot(FishingBot):
                     current, _locks = self.vision.summon_slots(fresh)
                 slot = next((s for s in current if abs(s[0] - anchor_x) <= 10), None)
                 if slot is None:
-                    self.notice('Çağırma çubuğu kapandı; kalan çağrılar atlandı.')
-                    return
+                    # Çubuk animasyon geçişinde bir kareliğine kaybolabilir;
+                    # gerçekten kapandıysa çıkmadan önce geri gelmesini bekle.
+                    slot, fresh = self._await_slot(anchor_x)
+                    if slot is None:
+                        self.notice('Çağırma çubuğu kapandı; kalan çağrılar atlandı.')
+                        return
                 mask = self.vision.counter_mask(fresh, slot[2])
                 if previous_mask is not None and mask is not None and np.array_equal(mask, previous_mask):
-                    # İmleç kartın üstünde vurgu sayacı gizliyor olabilir: bir kez
-                    # imleci kenara alıp yeniden oku; hâlâ aynıysa jeton bitmiştir.
-                    unchanged += 1
-                    if unchanged == 1:
-                        self.neutral_move(fresh, (slot[0], slot[1]))
-                        continue
-                    self.notice(f'{index + 1}. slotta sayaç değişmedi; jeton bitmiş ya da '
-                                'sınır dolmuş olabilir. Kalan çağrılar atlandı.')
-                    break
-                unchanged = 0
+                    # 0.30 sn'lik aralık oyuna az gelmiş olabilir: sayacın
+                    # değişmesini kısa bir süre bekle, sonra karar ver.
+                    changed = self._await_counter_change(anchor_x, previous_mask)
+                    if changed is None:
+                        self.notice(f'{index + 1}. slotta sayaç değişmedi; jeton bitmiş ya da '
+                                    'sınır dolmuş olabilir. Kalan çağrılar atlandı.')
+                        break
+                    mask = changed
                 with METRICS.span('summon_click'):
                     self.mouse.click(*self.pixel_to_desktop((slot[0], slot[1]), fresh),
                                      before_click=lambda p=(slot[0], slot[1]), f=fresh:
