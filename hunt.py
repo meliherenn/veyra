@@ -615,6 +615,21 @@ class HuntBot(FishingBot):
             except (OSError, ValueError):
                 pass
             return
+        # Çubuk animasyonla açılır: sayaçlar teker teker belirir ('1 slot'
+        # sanıp diğerlerini atlamamak için) iki ardışık tarama aynı sayıda
+        # slot verene kadar beklenir.
+        stable_deadline = time.monotonic() + 3.0
+        previous_count = len(slots)
+        while time.monotonic() < stable_deadline:
+            time.sleep(0.4)
+            fresh = self.detector.capture()
+            current, _locks = self.vision.summon_slots(fresh)
+            if current and len(current) == previous_count:
+                slots = current
+                break
+            previous_count = len(current)
+            if current:
+                slots = current
         self.notice(f'Çağırma çubuğu açık: {len(slots)} slot. Sıra: '
                     + ', '.join(str(self.provoke_counts[i] if i < len(self.provoke_counts) else 0)
                                 for i in range(len(slots))) + '.')

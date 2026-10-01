@@ -325,14 +325,15 @@ class HuntVision:
             for x, y in sorted(zip(xs.tolist(), ys.tolist())):
                 if all(abs(x - kx) > tw // 3 or abs(y - ky) > th // 3 for kx, ky, _s in cands):
                     cands.append((x, y, scale))
-        for x, y, _scale in cands:
-            crop = frame[max(0, y):y + th, max(0, x):x + tw]
-            if crop.size == 0:
-                continue
-            text = self.detector.ocr(crop, psm=7, scale=3, label='confirm')
-            if 'uygula' in text.lower():
-                return (x + tw // 2, y + th // 2)
-        return None
+        if not cands:
+            return None
+        # Uygula ve İptal farklı yazıldığı için şablon Uygula'da çok daha yüksek
+        # skor alır (canlı ölçüm: Uygula 0.996, İptal 0.532); en iyi aday Uygula'dır.
+        # OCR kapısı denenmişti ama küçük düğmede boş okuyup doğru düğmeyi
+        # blokluyordu.
+        cands.sort(key=lambda c: -c[2])
+        x, y, _best = cands[0]
+        return (x + tw // 2, y + th // 2)
 
     @staticmethod
     def _teal_mask(region):
