@@ -43,12 +43,12 @@ QLineEdit:focus,QSpinBox:focus { border-color:#63cfa9; }
 QRadioButton,QCheckBox { background:transparent; spacing:8px; padding:4px 0; }
 QCheckBox::indicator,QRadioButton::indicator { width:16px; height:16px; background:#0e1622; border:1px solid #52667e; border-radius:4px; }
 QRadioButton::indicator { border-radius:8px; }
-QCheckBox::indicator:checked { background:#65d7af; border:1px solid #65d7af; image:url(@CHECK@); }
+QCheckBox::indicator:checked { background:#65d7af; border:1px solid #65d7af; image:url("@CHECK@"); }
 QRadioButton::indicator:checked { background:#65d7af; border:3px solid #223e3a; }
 QTableWidget { background:#111b29; alternate-background-color:#152031; border:1px solid #263449; border-radius:8px; selection-background-color:#27403e; gridline-color:#263449; }
 QTableWidget::item { padding:6px; border-bottom:1px solid #1e2b3c; }
 QTableWidget::indicator { width:14px; height:14px; background:#0e1622; border:1px solid #52667e; border-radius:4px; }
-QTableWidget::indicator:checked { background:#65d7af; border:1px solid #65d7af; image:url(@CHECK@); }
+QTableWidget::indicator:checked { background:#65d7af; border:1px solid #65d7af; image:url("@CHECK@"); }
 QHeaderView::section { background:#1b293b; color:#aebed1; border:0; padding:9px 5px; font-size:11px; font-weight:600; }
 QTableCornerButton::section { background:#1b293b; border:0; }
 QPlainTextEdit { background:#0b1420; color:#a9bdd1; border:1px solid #27364b; border-radius:8px; padding:7px; font-size:11px; }
