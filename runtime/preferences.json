@@ -1,7 +1,7 @@
 {
   "mode": "color",
   "colors": [
-    "beyaz"
+    "mor"
   ],
   "fish": [
     "ay_sazani",
@@ -13,16 +13,28 @@
   "minimize": true,
   "max_cycles": 0,
   "max_minutes": 0,
-  "mastery": -1,
+  "mastery": 6,
   "energy_cycle": false,
   "auto_fish": "gok_mavisi_somon",
   "auto_splinter": true,
-  "hunt_mode": false,
+  "hunt_mode": true,
   "hunt_all": false,
   "hunt_creatures": [
-    "maharetli_fitsilya",
-    "krogan"
+    "yasli_phadd_ayisi"
+  ],
+  "hunt_custom": [
+    "Yaşlı Phadd Ayısı"
   ],
   "hunt_min": 0,
-  "hunt_max": 0
+  "hunt_max": 0,
+  "hunt_auto_battle": true,
+  "hunt_mount": true,
+  "hunt_provoke": true,
+  "hunt_provoke_counts": [
+    5,
+    5,
+    0,
+    0,
+    0
+  ]
 }

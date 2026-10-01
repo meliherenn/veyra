@@ -27697,3 +27697,810 @@ subprocess.CalledProcessError: Command '['tesseract', '/tmp/dwar-fishing-azwoqn6
 11:54:53 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
 11:54:55 Durdurma komutu alındı.
 11:54:55 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 2
+15:58:03 Hedefler: Beyaz / Gri | F8: duraklat/devam | F9: durdur | kaydırma: False
+15:58:07 Harita yeri değişti; yeniden taranacak.
+15:58:12 Halka seçildi: (284, 202). Balık adı okunuyor.
+15:58:17 Ay Sazanı doğrulandı; toplama başlatılıyor (1).
+15:58:17 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+15:58:28 Ay Sazanı: 10.00 sn ölçüldü. Döngü: 1.
+15:58:30 Halka seçildi: (590, 216). Balık adı okunuyor.
+15:58:38 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+15:58:40 Halka seçildi: (234, 496). Balık adı okunuyor.
+15:58:41 Ay Sazanı doğrulandı; toplama başlatılıyor (2).
+15:58:42 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+15:58:52 Ay Sazanı: 10.04 sn ölçüldü. Döngü: 2.
+15:58:54 Halka seçildi: (230, 258). Balık adı okunuyor.
+15:58:55 Ay Sazanı doğrulandı; toplama başlatılıyor (3).
+15:58:56 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+15:59:06 Ay Sazanı: 9.73 sn ölçüldü. Döngü: 3.
+15:59:08 Halka seçildi: (438, 188). Balık adı okunuyor.
+15:59:10 Ay Sazanı doğrulandı; toplama başlatılıyor (4).
+15:59:10 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+15:59:20 Ay Sazanı: 9.79 sn ölçüldü. Döngü: 4.
+15:59:23 Halka seçildi: (256, 228). Balık adı okunuyor.
+15:59:24 Ay Sazanı doğrulandı; toplama başlatılıyor (5).
+15:59:24 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+15:59:35 Ay Sazanı: 10.11 sn ölçüldü. Döngü: 5.
+15:59:38 Halka seçildi: (566, 210). Balık adı okunuyor.
+15:59:39 Ay Sazanı doğrulandı; toplama başlatılıyor (6).
+15:59:40 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+15:59:50 Ay Sazanı: 9.99 sn ölçüldü. Döngü: 6.
+15:59:52 Halka seçildi: (258, 258). Balık adı okunuyor.
+15:59:54 Ay Sazanı doğrulandı; toplama başlatılıyor (7).
+15:59:54 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:00:05 Ay Sazanı: 10.18 sn ölçüldü. Döngü: 7.
+16:00:07 Halka seçildi: (260, 284). Balık adı okunuyor.
+16:00:08 Ay Sazanı doğrulandı; toplama başlatılıyor (8).
+16:00:08 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:00:19 Ay Sazanı: 10.12 sn ölçüldü. Döngü: 8.
+16:00:22 Halka seçildi: (482, 208). Balık adı okunuyor.
+16:00:23 Ay Sazanı doğrulandı; toplama başlatılıyor (9).
+16:00:23 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:00:34 Ay Sazanı: 10.23 sn ölçüldü. Döngü: 9.
+16:00:36 Halka seçildi: (290, 202). Balık adı okunuyor.
+16:00:44 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:00:46 Halka seçildi: (594, 222). Balık adı okunuyor.
+16:00:54 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:00:56 Halka seçildi: (296, 224). Balık adı okunuyor.
+16:00:57 Ay Sazanı doğrulandı; toplama başlatılıyor (10).
+16:00:57 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:01:08 Ay Sazanı: 10.01 sn ölçüldü. Döngü: 10.
+16:01:09 Halka seçildi: (232, 496). Balık adı okunuyor.
+16:01:10 Ay Sazanı doğrulandı; toplama başlatılıyor (11).
+16:01:11 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:01:22 Ay Sazanı: 10.06 sn ölçüldü. Döngü: 11.
+16:01:24 Halka seçildi: (436, 180). Balık adı okunuyor.
+16:01:25 Ay Sazanı doğrulandı; toplama başlatılıyor (12).
+16:01:25 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:01:36 Ay Sazanı: 10.06 sn ölçüldü. Döngü: 12.
+16:01:38 Halka seçildi: (616, 192). Balık adı okunuyor.
+16:01:39 Ay Sazanı doğrulandı; toplama başlatılıyor (13).
+16:01:39 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:01:50 Ay Sazanı: 10.04 sn ölçüldü. Döngü: 13.
+16:01:52 Halka seçildi: (566, 210). Balık adı okunuyor.
+16:01:53 Ay Sazanı doğrulandı; toplama başlatılıyor (14).
+16:01:54 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:02:04 Ay Sazanı: 9.80 sn ölçüldü. Döngü: 14.
+16:02:06 Halka seçildi: (228, 252). Balık adı okunuyor.
+16:02:07 Ay Sazanı doğrulandı; toplama başlatılıyor (15).
+16:02:08 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:02:19 Ay Sazanı: 10.11 sn ölçüldü. Döngü: 15.
+16:02:20 Halka seçildi: (462, 194). Balık adı okunuyor.
+16:02:22 Ay Sazanı doğrulandı; toplama başlatılıyor (16).
+16:02:22 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:02:33 Ay Sazanı: 10.10 sn ölçüldü. Döngü: 16.
+16:02:34 Halka seçildi: (658, 236). Balık adı okunuyor.
+16:02:35 Ay Sazanı doğrulandı; toplama başlatılıyor (17).
+16:02:36 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:02:46 Ay Sazanı: 10.01 sn ölçüldü. Döngü: 17.
+16:02:48 Halka seçildi: (498, 228). Balık adı okunuyor.
+16:02:49 Ay Sazanı doğrulandı; toplama başlatılıyor (18).
+16:02:49 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:03:00 Ay Sazanı: 10.02 sn ölçüldü. Döngü: 18.
+16:03:02 Halka seçildi: (256, 184). Balık adı okunuyor.
+16:03:03 Ay Sazanı doğrulandı; toplama başlatılıyor (19).
+16:03:03 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:03:14 Ay Sazanı: 10.05 sn ölçüldü. Döngü: 19.
+16:03:15 Halka seçildi: (588, 226). Balık adı okunuyor.
+16:03:23 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:03:24 Halka seçildi: (236, 212). Balık adı okunuyor.
+16:03:26 Ay Sazanı doğrulandı; toplama başlatılıyor (20).
+16:03:26 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:03:37 Ay Sazanı: 9.96 sn ölçüldü. Döngü: 20.
+16:03:39 Halka seçildi: (582, 196). Balık adı okunuyor.
+16:03:40 Ay Sazanı doğrulandı; toplama başlatılıyor (21).
+16:03:40 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:03:51 Ay Sazanı: 9.96 sn ölçüldü. Döngü: 21.
+16:03:52 Halka seçildi: (286, 204). Balık adı okunuyor.
+16:03:53 Ay Sazanı doğrulandı; toplama başlatılıyor (22).
+16:03:54 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:04:04 Ay Sazanı: 9.97 sn ölçüldü. Döngü: 22.
+16:04:07 Hedef hareket ediyor; yeni görüntüyle tekrar aranacak.
+16:04:09 Halka seçildi: (252, 256). Balık adı okunuyor.
+16:04:10 Ay Sazanı doğrulandı; toplama başlatılıyor (23).
+16:04:10 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:04:21 Ay Sazanı: 10.16 sn ölçüldü. Döngü: 23.
+16:04:22 Halka seçildi: (490, 188). Balık adı okunuyor.
+16:04:24 Ay Sazanı doğrulandı; toplama başlatılıyor (24).
+16:04:24 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:04:35 Ay Sazanı: 10.04 sn ölçüldü. Döngü: 24.
+16:04:37 Halka seçildi: (260, 482). Balık adı okunuyor.
+16:04:38 Ay Sazanı doğrulandı; toplama başlatılıyor (25).
+16:04:39 Olta takılı değil; çantadaki olta takılacak.
+16:04:41 Tanınan oyun uyarısı kapatılıyor.
+16:04:44 Üst menüdeki karakter çantası açılıyor.
+16:04:48 Eşya sekmesi açılıyor.
+16:04:52 Çantadaki olta takılıyor.
+16:04:53 Kıymık algılandı; Orman Kalbi İksiri aranıyor.
+16:04:54 Tanınan oyun uyarısı kapatılıyor.
+16:04:58 İksir sekmesi açılıyor.
+16:05:02 Orman Kalbi İksiri kullanılıyor.
+16:05:06 İksir için Uygula onayı veriliyor.
+16:05:08 İksir kullanımı doğrulandı (rozet); olta yeniden takılıyor.
+16:05:10 Eşya sekmesi açılıyor.
+16:05:14 Çantadaki olta takılıyor.
+16:05:15 Olta takıldı; meslek döngüsüne dönülüyor.
+16:05:17 Çanta kapatılıyor.
+16:05:21 Üst menüden Avlan ekranına dönülüyor.
+16:05:23 Avlan ekranı doğrulandı; enerji biriktirmeye devam ediliyor.
+16:05:28 Halka seçildi: (288, 178). Balık adı okunuyor.
+16:05:29 Ay Sazanı doğrulandı; toplama başlatılıyor (26).
+16:05:30 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:05:40 Ay Sazanı: 10.09 sn ölçüldü. Döngü: 25.
+16:05:43 Halka seçildi: (262, 178). Balık adı okunuyor.
+16:05:44 Ay Sazanı doğrulandı; toplama başlatılıyor (27).
+16:05:44 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:05:55 Ay Sazanı: 9.98 sn ölçüldü. Döngü: 26.
+16:05:56 Halka seçildi: (368, 182). Balık adı okunuyor.
+16:05:57 Ay Sazanı doğrulandı; toplama başlatılıyor (28).
+16:05:58 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:06:08 Ay Sazanı: 10.03 sn ölçüldü. Döngü: 27.
+16:06:10 Halka seçildi: (314, 196). Balık adı okunuyor.
+16:06:11 Ay Sazanı doğrulandı; toplama başlatılıyor (29).
+16:06:11 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:06:22 Ay Sazanı: 10.07 sn ölçüldü. Döngü: 28.
+16:06:23 Halka seçildi: (236, 212). Balık adı okunuyor.
+16:06:24 Ay Sazanı doğrulandı; toplama başlatılıyor (30).
+16:06:25 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:06:35 Ay Sazanı: 10.01 sn ölçüldü. Döngü: 29.
+16:06:37 Halka seçildi: (294, 480). Balık adı okunuyor.
+16:06:38 Ay Sazanı doğrulandı; toplama başlatılıyor (31).
+16:06:39 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:06:50 Ay Sazanı: 10.06 sn ölçüldü. Döngü: 30.
+16:06:51 Halka seçildi: (248, 254). Balık adı okunuyor.
+16:06:53 Ay Sazanı doğrulandı; toplama başlatılıyor (32).
+16:06:53 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:07:04 Ay Sazanı: 10.00 sn ölçüldü. Döngü: 31.
+16:07:05 Halka seçildi: (444, 174). Balık adı okunuyor.
+16:07:13 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:07:15 Halka seçildi: (724, 170). Balık adı okunuyor.
+16:07:16 Ay Sazanı doğrulandı; toplama başlatılıyor (33).
+16:07:16 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:07:27 Ay Sazanı: 10.02 sn ölçüldü. Döngü: 32.
+16:07:29 Halka seçildi: (556, 196). Balık adı okunuyor.
+16:07:37 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:07:38 Halka seçildi: (632, 202). Balık adı okunuyor.
+16:07:39 Ay Sazanı doğrulandı; toplama başlatılıyor (34).
+16:07:40 Ay Sazanı: toplama başladı. Beklenen süre 10.1 sn; ekran izleniyor.
+16:07:50 Ay Sazanı: 9.97 sn ölçüldü. Döngü: 33.
+16:07:52 Halka seçildi: (630, 172). Balık adı okunuyor.
+16:07:53 Ay Sazanı doğrulandı; toplama başlatılıyor (35).
+16:07:55 Oyun uyarısı kapatılıyor; arama sürecek.
+16:07:58 Toplama başlamadı; bu hedef atlanıyor.
+16:08:00 Halka seçildi: (274, 234). Balık adı okunuyor.
+16:08:02 Ay Sazanı doğrulandı; toplama başlatılıyor (36).
+16:08:02 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:08:13 Ay Sazanı: 10.02 sn ölçüldü. Döngü: 34.
+16:08:14 Halka seçildi: (266, 174). Balık adı okunuyor.
+16:08:16 Ay Sazanı doğrulandı; toplama başlatılıyor (37).
+16:08:16 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:08:27 Ay Sazanı: 10.04 sn ölçüldü. Döngü: 35.
+16:08:28 Halka seçildi: (368, 184). Balık adı okunuyor.
+16:08:29 Ay Sazanı doğrulandı; toplama başlatılıyor (38).
+16:08:30 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:08:40 Ay Sazanı: 10.06 sn ölçüldü. Döngü: 36.
+16:08:42 Halka seçildi: (250, 228). Balık adı okunuyor.
+16:08:43 Ay Sazanı doğrulandı; toplama başlatılıyor (39).
+16:08:44 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:08:54 Ay Sazanı: 10.04 sn ölçüldü. Döngü: 37.
+16:08:56 Halka seçildi: (322, 196). Balık adı okunuyor.
+16:08:57 Ay Sazanı doğrulandı; toplama başlatılıyor (40).
+16:08:57 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:09:08 Ay Sazanı: 9.98 sn ölçüldü. Döngü: 38.
+16:09:10 Halka seçildi: (212, 484). Balık adı okunuyor.
+16:09:11 Ay Sazanı doğrulandı; toplama başlatılıyor (41).
+16:09:12 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:09:22 Ay Sazanı: 10.01 sn ölçüldü. Döngü: 39.
+16:09:24 Halka seçildi: (442, 172). Balık adı okunuyor.
+16:09:32 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:09:34 Halka seçildi: (254, 256). Balık adı okunuyor.
+16:09:35 Ay Sazanı doğrulandı; toplama başlatılıyor (42).
+16:09:35 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:09:46 Ay Sazanı: 9.99 sn ölçüldü. Döngü: 40.
+16:09:48 Halka seçildi: (556, 194). Balık adı okunuyor.
+16:09:56 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:09:58 Halka seçildi: (432, 214). Balık adı okunuyor.
+16:10:06 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:10:07 Halka seçildi: (312, 238). Balık adı okunuyor.
+16:10:08 Ay Sazanı doğrulandı; toplama başlatılıyor (43).
+16:10:09 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:10:19 Ay Sazanı: 10.01 sn ölçüldü. Döngü: 41.
+16:10:22 Halka seçildi: (630, 172). Balık adı okunuyor.
+16:10:23 Ay Sazanı doğrulandı; toplama başlatılıyor (44).
+16:10:23 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:10:34 Ay Sazanı: 10.07 sn ölçüldü. Döngü: 42.
+16:10:36 Halka seçildi: (276, 176). Balık adı okunuyor.
+16:10:37 Ay Sazanı doğrulandı; toplama başlatılıyor (45).
+16:10:37 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:10:48 Ay Sazanı: 10.07 sn ölçüldü. Döngü: 43.
+16:10:50 Halka seçildi: (308, 170). Balık adı okunuyor.
+16:10:51 Ay Sazanı doğrulandı; toplama başlatılıyor (46).
+16:10:51 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:11:02 Ay Sazanı: 10.09 sn ölçüldü. Döngü: 44.
+16:11:04 Halka seçildi: (258, 478). Balık adı okunuyor.
+16:11:05 Ay Sazanı doğrulandı; toplama başlatılıyor (47).
+16:11:06 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:11:16 Ay Sazanı: 10.10 sn ölçüldü. Döngü: 45.
+16:11:19 Hedef hareket ediyor; yeni görüntüyle tekrar aranacak.
+16:11:20 Halka seçildi: (498, 190). Balık adı okunuyor.
+16:11:21 Ay Sazanı doğrulandı; toplama başlatılıyor (48).
+16:11:21 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:11:32 Ay Sazanı: 10.11 sn ölçüldü. Döngü: 46.
+16:11:33 Halka seçildi: (444, 172). Balık adı okunuyor.
+16:11:41 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:11:43 Halka seçildi: (416, 180). Balık adı okunuyor.
+16:11:51 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:11:52 Halka seçildi: (674, 214). Balık adı okunuyor.
+16:11:53 Ay Sazanı doğrulandı; toplama başlatılıyor (49).
+16:11:54 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:12:05 Ay Sazanı: 10.03 sn ölçüldü. Döngü: 47.
+16:12:06 Halka seçildi: (556, 196). Balık adı okunuyor.
+16:12:07 Ay Sazanı doğrulandı; toplama başlatılıyor (50).
+16:12:07 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:12:18 Ay Sazanı: 9.99 sn ölçüldü. Döngü: 48.
+16:12:19 Halka seçildi: (322, 188). Balık adı okunuyor.
+16:12:20 Ay Sazanı doğrulandı; toplama başlatılıyor (51).
+16:12:21 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:12:32 Ay Sazanı: 10.03 sn ölçüldü. Döngü: 49.
+16:12:34 Halka seçildi: (290, 232). Balık adı okunuyor.
+16:12:35 Ay Sazanı doğrulandı; toplama başlatılıyor (52).
+16:12:35 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:12:46 Ay Sazanı: 9.98 sn ölçüldü. Döngü: 50.
+16:12:48 Halka seçildi: (224, 278). Balık adı okunuyor.
+16:12:49 Ay Sazanı doğrulandı; toplama başlatılıyor (53).
+16:12:49 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:13:00 Ay Sazanı: 9.98 sn ölçüldü. Döngü: 51.
+16:13:02 Halka seçildi: (432, 212). Balık adı okunuyor.
+16:13:03 Ay Sazanı doğrulandı; toplama başlatılıyor (54).
+16:13:04 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:13:14 Ay Sazanı: 9.99 sn ölçüldü. Döngü: 52.
+16:13:16 Halka seçildi: (664, 172). Balık adı okunuyor.
+16:13:17 Ay Sazanı doğrulandı; toplama başlatılıyor (55).
+16:13:17 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:13:28 Ay Sazanı: 10.03 sn ölçüldü. Döngü: 53.
+16:13:29 Halka seçildi: (288, 174). Balık adı okunuyor.
+16:13:30 Ay Sazanı doğrulandı; toplama başlatılıyor (56).
+16:13:31 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:13:41 Ay Sazanı: 9.98 sn ölçüldü. Döngü: 54.
+16:13:43 Halka seçildi: (262, 178). Balık adı okunuyor.
+16:13:44 Ay Sazanı doğrulandı; toplama başlatılıyor (57).
+16:13:45 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:13:56 Ay Sazanı: 9.97 sn ölçüldü. Döngü: 55.
+16:13:57 Halka seçildi: (572, 172). Balık adı okunuyor.
+16:13:58 Ay Sazanı doğrulandı; toplama başlatılıyor (58).
+16:13:58 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:14:09 Ay Sazanı: 9.97 sn ölçüldü. Döngü: 56.
+16:14:11 Hedef hareket ediyor; yeni görüntüyle tekrar aranacak.
+16:14:15 Halka seçildi: (438, 170). Balık adı okunuyor.
+16:14:16 Ay Sazanı doğrulandı; toplama başlatılıyor (59).
+16:14:16 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:14:27 Ay Sazanı: 9.99 sn ölçüldü. Döngü: 57.
+16:14:28 Halka seçildi: (712, 182). Balık adı okunuyor.
+16:14:29 Ay Sazanı doğrulandı; toplama başlatılıyor (60).
+16:14:30 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:14:41 Ay Sazanı: 9.98 sn ölçüldü. Döngü: 58.
+16:14:42 Halka seçildi: (590, 190). Balık adı okunuyor.
+16:14:43 Ay Sazanı doğrulandı; toplama başlatılıyor (61).
+16:14:44 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:14:54 Ay Sazanı: 9.96 sn ölçüldü. Döngü: 59.
+16:14:56 Halka seçildi: (530, 188). Balık adı okunuyor.
+16:14:57 Ay Sazanı doğrulandı; toplama başlatılıyor (62).
+16:14:57 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:15:08 Ay Sazanı: 10.02 sn ölçüldü. Döngü: 60.
+16:15:10 Halka seçildi: (256, 252). Balık adı okunuyor.
+16:15:11 Ay Sazanı doğrulandı; toplama başlatılıyor (63).
+16:15:12 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:15:22 Ay Sazanı: 10.00 sn ölçüldü. Döngü: 61.
+16:15:24 Halka seçildi: (288, 232). Balık adı okunuyor.
+16:15:25 Ay Sazanı doğrulandı; toplama başlatılıyor (64).
+16:15:25 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:15:36 Ay Sazanı: 9.97 sn ölçüldü. Döngü: 62.
+16:15:37 Halka seçildi: (432, 212). Balık adı okunuyor.
+16:15:38 Ay Sazanı doğrulandı; toplama başlatılıyor (65).
+16:15:39 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:15:49 Ay Sazanı: 9.98 sn ölçüldü. Döngü: 63.
+16:15:52 Halka seçildi: (224, 276). Balık adı okunuyor.
+16:15:53 Ay Sazanı doğrulandı; toplama başlatılıyor (66).
+16:15:53 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:16:04 Ay Sazanı: 9.96 sn ölçüldü. Döngü: 64.
+16:16:06 Halka seçildi: (244, 192). Balık adı okunuyor.
+16:16:07 Ay Sazanı doğrulandı; toplama başlatılıyor (67).
+16:16:08 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:16:18 Ay Sazanı: 9.97 sn ölçüldü. Döngü: 65.
+16:16:21 Halka seçildi: (612, 214). Balık adı okunuyor.
+16:16:22 Ay Sazanı doğrulandı; toplama başlatılıyor (68).
+16:16:22 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:16:33 Ay Sazanı: 9.94 sn ölçüldü. Döngü: 66.
+16:16:35 Halka seçildi: (432, 172). Balık adı okunuyor.
+16:16:36 Ay Sazanı doğrulandı; toplama başlatılıyor (69).
+16:16:37 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:16:47 Ay Sazanı: 9.94 sn ölçüldü. Döngü: 67.
+16:16:48 Halka seçildi: (260, 450). Balık adı okunuyor.
+16:16:50 Ay Sazanı doğrulandı; toplama başlatılıyor (70).
+16:16:50 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:17:01 Ay Sazanı: 9.96 sn ölçüldü. Döngü: 68.
+16:17:03 Halka seçildi: (588, 188). Balık adı okunuyor.
+16:17:11 Balık seçimi doğrulanamadı; yeni hedef aranıyor.
+16:17:13 Halka seçildi: (280, 176). Balık adı okunuyor.
+16:17:14 Ay Sazanı doğrulandı; toplama başlatılıyor (71).
+16:17:15 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:17:25 Ay Sazanı: 10.00 sn ölçüldü. Döngü: 69.
+16:17:27 Halka seçildi: (250, 228). Balık adı okunuyor.
+16:17:28 Ay Sazanı doğrulandı; toplama başlatılıyor (72).
+16:17:29 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:17:40 Ay Sazanı: 10.07 sn ölçüldü. Döngü: 70.
+16:17:42 Halka seçildi: (350, 166). Balık adı okunuyor.
+16:17:43 Ay Sazanı doğrulandı; toplama başlatılıyor (73).
+16:17:44 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:17:55 Ay Sazanı: 9.97 sn ölçüldü. Döngü: 71.
+16:17:56 Halka seçildi: (430, 212). Balık adı okunuyor.
+16:17:58 Ay Sazanı doğrulandı; toplama başlatılıyor (74).
+16:17:58 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:18:09 Ay Sazanı: 9.99 sn ölçüldü. Döngü: 72.
+16:18:10 Halka seçildi: (224, 280). Balık adı okunuyor.
+16:18:11 Ay Sazanı doğrulandı; toplama başlatılıyor (75).
+16:18:12 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:18:22 Ay Sazanı: 9.96 sn ölçüldü. Döngü: 73.
+16:18:24 Halka seçildi: (408, 218). Balık adı okunuyor.
+16:18:25 Ay Sazanı doğrulandı; toplama başlatılıyor (76).
+16:18:26 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:18:36 Ay Sazanı: 10.02 sn ölçüldü. Döngü: 74.
+16:18:39 Halka seçildi: (222, 176). Balık adı okunuyor.
+16:18:40 Ay Sazanı doğrulandı; toplama başlatılıyor (77).
+16:18:41 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:18:51 Ay Sazanı: 10.05 sn ölçüldü. Döngü: 75.
+16:18:52 Halka seçildi: (250, 264). Balık adı okunuyor.
+16:18:54 Ay Sazanı doğrulandı; toplama başlatılıyor (78).
+16:18:54 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:19:05 Ay Sazanı: 9.96 sn ölçüldü. Döngü: 76.
+16:19:06 Halka seçildi: (280, 488). Balık adı okunuyor.
+16:19:07 Ay Sazanı doğrulandı; toplama başlatılıyor (79).
+16:19:08 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:19:18 Ay Sazanı: 10.01 sn ölçüldü. Döngü: 77.
+16:19:20 Halka seçildi: (444, 172). Balık adı okunuyor.
+16:19:22 Ay Sazanı doğrulandı; toplama başlatılıyor (80).
+16:19:22 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:19:33 Ay Sazanı: 10.03 sn ölçüldü. Döngü: 78.
+16:19:34 Halka seçildi: (506, 220). Balık adı okunuyor.
+16:19:35 Ay Sazanı doğrulandı; toplama başlatılıyor (81).
+16:19:36 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:19:46 Ay Sazanı: 10.05 sn ölçüldü. Döngü: 79.
+16:19:49 Halka seçildi: (236, 194). Balık adı okunuyor.
+16:19:50 Ay Sazanı doğrulandı; toplama başlatılıyor (82).
+16:19:50 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:20:01 Ay Sazanı: 9.99 sn ölçüldü. Döngü: 80.
+16:20:02 Halka seçildi: (272, 228). Balık adı okunuyor.
+16:20:03 Ay Sazanı doğrulandı; toplama başlatılıyor (83).
+16:20:04 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:20:05 Durdurma komutu alındı.
+16:20:05 Bitti. Toplama denemesi: 83 | tamamlanan döngü: 80 | kaydırma: 0
+16:21:42 Hedefler: Beyaz / Gri | F8: duraklat/devam | F9: durdur | kaydırma: False
+16:21:43 Halka seçildi: (586, 204). Balık adı okunuyor.
+16:21:44 Elle duraklatıldı. Devam: F8. Durdur: F9.
+16:21:50 Halka seçildi: (374, 210). Balık adı okunuyor.
+16:21:51 Ay Sazanı doğrulandı; toplama başlatılıyor (1).
+16:21:51 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:22:02 Ay Sazanı: 10.21 sn ölçüldü. Döngü: 1.
+16:22:03 Halka seçildi: (586, 196). Balık adı okunuyor.
+16:22:04 Ay Sazanı doğrulandı; toplama başlatılıyor (2).
+16:22:05 Ay Sazanı: toplama başladı. Beklenen süre 10.0 sn; ekran izleniyor.
+16:22:13 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+16:22:18 Durdurma komutu alındı.
+16:22:18 Bitti. Toplama denemesi: 2 | tamamlanan döngü: 1 | kaydırma: 0
+16:22:19 Hedefler: Mor | F8: duraklat/devam | F9: durdur | kaydırma: False
+16:22:21 Halka seçildi: (248, 246). Balık adı okunuyor.
+16:22:23 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (1).
+16:22:23 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:22:54 Gök Mavisi Somon Balığı: 30.16 sn ölçüldü. Döngü: 1.
+16:22:56 Halka seçildi: (698, 212). Balık adı okunuyor.
+16:22:57 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (2).
+16:22:58 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:23:00 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+16:23:09 Mevcut toplama: toplama başladı. İlk süre ölçülüyor.
+16:23:28 Toplama penceresi kapandı. Tamamlanan döngü: 2.
+16:23:30 Halka seçildi: (436, 182). Balık adı okunuyor.
+16:23:32 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (3).
+16:23:32 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:24:02 Gök Mavisi Somon Balığı: 29.71 sn ölçüldü. Döngü: 3.
+16:24:04 Halka seçildi: (560, 212). Balık adı okunuyor.
+16:24:05 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (4).
+16:24:06 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:24:36 Gök Mavisi Somon Balığı: 29.77 sn ölçüldü. Döngü: 4.
+16:24:40 Halka seçildi: (248, 252). Balık adı okunuyor.
+16:24:41 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (5).
+16:24:41 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:25:12 Gök Mavisi Somon Balığı: 29.86 sn ölçüldü. Döngü: 5.
+16:25:40 Arama sürüyor; seçtiğiniz türlerden henüz balık bulunamadı.
+16:25:57 Halka seçildi: (262, 306). Balık adı okunuyor.
+16:25:58 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (6).
+16:25:58 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:26:29 Gök Mavisi Somon Balığı: 29.84 sn ölçüldü. Döngü: 6.
+16:26:31 Halka seçildi: (692, 206). Balık adı okunuyor.
+16:26:32 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (7).
+16:26:32 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:27:03 Gök Mavisi Somon Balığı: 30.00 sn ölçüldü. Döngü: 7.
+16:27:05 Halka seçildi: (388, 174). Balık adı okunuyor.
+16:27:07 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (8).
+16:27:07 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:27:38 Gök Mavisi Somon Balığı: 29.92 sn ölçüldü. Döngü: 8.
+16:28:05 Arama sürüyor; seçtiğiniz türlerden henüz balık bulunamadı.
+16:28:15 Halka seçildi: (396, 272). Balık adı okunuyor.
+16:28:16 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (9).
+16:28:16 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:28:47 Gök Mavisi Somon Balığı: 29.99 sn ölçüldü. Döngü: 9.
+16:29:05 Halka seçildi: (674, 198). Balık adı okunuyor.
+16:29:06 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (10).
+16:29:06 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:29:31 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+16:29:36 Mevcut toplama: toplama başladı. İlk süre ölçülüyor.
+16:29:38 Avlan haritası görünmüyor veya ekran değişti.
+16:29:57 Ekran değişti; işlem iptal edildi.
+16:29:58 Mevcut toplama: toplama başladı. İlk süre ölçülüyor.
+16:30:06 Avlan haritası görünmüyor veya ekran değişti.
+16:30:13 Mevcut toplama: toplama başladı. İlk süre ölçülüyor.
+16:30:28 Toplama penceresi kapandı. Tamamlanan döngü: 10.
+16:30:29 Arama sürüyor; seçtiğiniz türlerden henüz balık bulunamadı.
+16:30:32 Halka seçildi: (266, 246). Balık adı okunuyor.
+16:30:33 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (11).
+16:30:34 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:31:04 Gök Mavisi Somon Balığı: 29.86 sn ölçüldü. Döngü: 11.
+16:31:06 Halka seçildi: (576, 220). Balık adı okunuyor.
+16:31:07 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (12).
+16:31:08 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:31:38 Gök Mavisi Somon Balığı: 29.85 sn ölçüldü. Döngü: 12.
+16:31:52 Halka seçildi: (790, 188). Balık adı okunuyor.
+16:31:53 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (13).
+16:31:54 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:32:24 Gök Mavisi Somon Balığı: 30.12 sn ölçüldü. Döngü: 13.
+16:32:33 Avlan haritası görünmüyor veya ekran değişti.
+16:33:00 Halka seçildi: (234, 508). Balık adı okunuyor.
+16:33:01 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (14).
+16:33:02 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:33:32 Gök Mavisi Somon Balığı: 29.92 sn ölçüldü. Döngü: 14.
+16:33:35 Balık son kontrolde yeniden bulunamadı; kara listeye alınmadan yeniden taranacak.
+16:33:37 Halka seçildi: (672, 204). Balık adı okunuyor.
+16:33:38 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (15).
+16:33:39 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:34:09 Gök Mavisi Somon Balığı: 29.77 sn ölçüldü. Döngü: 15.
+16:34:11 Halka seçildi: (444, 214). Balık adı okunuyor.
+16:34:12 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (16).
+16:34:12 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:34:43 Gök Mavisi Somon Balığı: 30.21 sn ölçüldü. Döngü: 16.
+16:34:46 Halka seçildi: (234, 300). Balık adı okunuyor.
+16:34:47 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (17).
+16:34:48 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:35:19 Gök Mavisi Somon Balığı: 30.20 sn ölçüldü. Döngü: 17.
+16:35:30 Halka seçildi: (576, 192). Balık adı okunuyor.
+16:35:31 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (18).
+16:35:31 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:36:02 Gök Mavisi Somon Balığı: 30.25 sn ölçüldü. Döngü: 18.
+16:36:29 Arama sürüyor; seçtiğiniz türlerden henüz balık bulunamadı.
+16:36:35 Halka seçildi: (218, 248). Balık adı okunuyor.
+16:36:36 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (19).
+16:36:37 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:37:07 Gök Mavisi Somon Balığı: 29.75 sn ölçüldü. Döngü: 19.
+16:37:11 Halka seçildi: (448, 164). Balık adı okunuyor.
+16:37:13 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (20).
+16:37:13 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:37:44 Gök Mavisi Somon Balığı: 29.84 sn ölçüldü. Döngü: 20.
+16:37:45 Halka seçildi: (330, 228). Balık adı okunuyor.
+16:37:47 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (21).
+16:37:47 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:38:18 Gök Mavisi Somon Balığı: 29.99 sn ölçüldü. Döngü: 21.
+16:38:21 Halka seçildi: (576, 228). Balık adı okunuyor.
+16:38:22 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (22).
+16:38:22 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:38:53 Gök Mavisi Somon Balığı: 29.85 sn ölçüldü. Döngü: 22.
+16:39:06 Halka seçildi: (518, 170). Balık adı okunuyor.
+16:39:07 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (23).
+16:39:07 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:39:40 Toplama penceresi kapandı. Tamamlanan döngü: 23.
+16:39:40 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+16:40:09 Arama sürüyor; seçtiğiniz türlerden henüz balık bulunamadı.
+16:40:11 Halka seçildi: (720, 168). Balık adı okunuyor.
+16:40:12 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (24).
+16:40:13 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:40:44 Gök Mavisi Somon Balığı: 29.92 sn ölçüldü. Döngü: 24.
+16:40:46 Halka seçildi: (296, 236). Balık adı okunuyor.
+16:40:47 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (25).
+16:40:48 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:41:08 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+16:41:25 İmleç hedefe ulaşamadı: hedef (281, 231), gerçek (289, 231); tıklanmadı.
+16:41:27 İmleç kullanıcı tarafından taşındı; tıklanmadı.
+16:41:30 Halka seçildi: (290, 248). Balık adı okunuyor.
+16:41:31 Gök Mavisi Somon Balığı doğrulandı; toplama başlatılıyor (26).
+16:41:32 Gök Mavisi Somon Balığı: toplama başladı. Beklenen süre 30.0 sn; ekran izleniyor.
+16:41:50 Durdurma komutu alındı.
+16:41:50 Bitti. Toplama denemesi: 26 | tamamlanan döngü: 24 | kaydırma: 0
+23:33:07 Yaratık avı: Maharetli Fitsilya, Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
+23:33:07 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+23:33:13 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+23:35:59 Yaratık avı: Maharetli Fitsilya, Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
+23:36:03 Avlan haritası görünmüyor veya ekran değişti.
+23:36:03 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+23:36:04 Durdurma komutu alındı.
+23:36:04 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+23:41:08 Yaratık avı: Krogan | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: True
+23:41:11 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+23:41:12 Durdurma komutu alındı.
+23:41:12 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+01:27:22 Yaratık avı: tümü | seviye *-* | F8: duraklat/devam | F9: durdur | kaydırma: False
+01:27:27 Avlan haritası görünmüyor veya ekran değişti.
+01:27:28 Oyun ekranı geri geldi; kararlı görüntü bekleniyor.
+01:27:29 Ekran doğrulandı; devam ediliyor.
+01:27:31 Phadd Ayisi [5] seçildi: (882, 739). Saldır düğmesi bekleniyor.
+01:27:32 Phadd Ayisi [5] doğrulandı; saldırılıyor (1).
+01:27:36 Provokasyon yarıda kaldı: provoke düğmesi son kontrolde görünmedi.
+01:27:39 auto düğmesi son kontrolde görünmedi.
+01:27:41 Dövüş sürüyor (8 sn); sonuç ekranı bekleniyor.
+01:27:42 Dövüş sürüyor (10 sn); sonuç ekranı bekleniyor.
+01:27:44 Dövüş sürüyor (12 sn); sonuç ekranı bekleniyor.
+01:27:46 Dövüş sürüyor (13 sn); sonuç ekranı bekleniyor.
+01:27:47 Dövüş sürüyor (15 sn); sonuç ekranı bekleniyor.
+01:27:49 Dövüş sürüyor (16 sn); sonuç ekranı bekleniyor.
+01:27:50 Dövüş sürüyor (18 sn); sonuç ekranı bekleniyor.
+01:27:50 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:28:21 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:28:27 Avlan haritası görünmüyor veya ekran değişti.
+01:28:35 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:29:05 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:29:14 Avlan haritası görünmüyor veya ekran değişti.
+01:29:14 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:29:27 Avlan haritası görünmüyor veya ekran değişti.
+01:29:29 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:29:31 Avlan haritası görünmüyor veya ekran değişti.
+01:29:39 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:30:09 Avlan haritası görünmüyor veya ekran değişti.
+01:30:12 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:30:43 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:31:13 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:31:20 Sonuç düğmesi son kontrolde görünmedi; yeniden okunacak.
+01:31:22 Avlan haritası görünmüyor veya ekran değişti.
+01:31:29 Oyun ekranı geri geldi; kararlı görüntü bekleniyor.
+01:31:31 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:31:47 Bot koruması yazısı algılandı.
+01:31:51 Avlan haritası görünmüyor veya ekran değişti.
+01:31:51 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:32:01 Avlan haritası görünmüyor veya ekran değişti.
+01:32:02 Oyun ekranı geri geldi; kararlı görüntü bekleniyor.
+01:32:03 Ekran doğrulandı; devam ediliyor.
+01:32:04 Phadd Ayisi [5] seçildi: (1422, 691). Saldır düğmesi bekleniyor.
+01:32:06 Phadd Ayisi [5] doğrulandı; saldırılıyor (2).
+01:32:10 Provokasyon yarıda kaldı: provoke düğmesi son kontrolde görünmedi.
+01:32:12 auto düğmesi son kontrolde görünmedi.
+01:32:13 Dövüş sürüyor (8 sn); sonuç ekranı bekleniyor.
+01:32:14 Dövüş sürüyor (9 sn); sonuç ekranı bekleniyor.
+01:32:16 Dövüş sürüyor (10 sn); sonuç ekranı bekleniyor.
+01:32:17 Dövüş sürüyor (11 sn); sonuç ekranı bekleniyor.
+01:32:18 Dövüş sürüyor (13 sn); sonuç ekranı bekleniyor.
+01:32:19 Dövüş sürüyor (14 sn); sonuç ekranı bekleniyor.
+01:32:21 Dövüş sürüyor (15 sn); sonuç ekranı bekleniyor.
+01:32:22 Dövüş sürüyor (16 sn); sonuç ekranı bekleniyor.
+01:32:24 Dövüş sürüyor (18 sn); sonuç ekranı bekleniyor.
+01:32:25 Dövüş sürüyor (19 sn); sonuç ekranı bekleniyor.
+01:32:27 Dövüş sürüyor (21 sn); sonuç ekranı bekleniyor.
+01:32:28 Saldırı başlamadı. Başarısız seçim: 1. Tıklama noktası değiştirilip yeni hedef aranacak.
+01:32:31 Avlan haritası görünmüyor veya ekran değişti.
+01:32:31 Ekran değişti; işlem iptal edildi.
+01:32:37 Avlan haritası görünmüyor veya ekran değişti.
+01:32:37 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:32:40 Durdurma komutu alındı.
+01:32:40 Bitti. Saldırı denemesi: 2 | tamamlanan döngü: 0 | kaydırma: 0
+01:34:22 Yaratık avı: tümü | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+01:34:26 Yaratık son kontrolde bulunamadı; yeniden taranacak.
+01:34:29 Phadd Ayisi [5] seçildi: (1453, 315). Saldır düğmesi bekleniyor.
+01:34:31 Phadd Ayisi [5] doğrulandı; saldırılıyor (1).
+01:34:34 Provokasyon açılıyor; çağırma çubuğu bekleniyor.
+01:34:41 Çağırma çubuğu açılmadı; provokasyon atlandı.
+01:34:43 Otomatik savaş açılıyor.
+01:34:44 Dövüş sürüyor (13 sn); sonuç ekranı bekleniyor.
+01:34:45 Dövüş sürüyor (14 sn); sonuç ekranı bekleniyor.
+01:34:46 Dövüş sürüyor (16 sn); sonuç ekranı bekleniyor.
+01:34:48 Dövüş sürüyor (17 sn); sonuç ekranı bekleniyor.
+01:34:49 Dövüş sürüyor (18 sn); sonuç ekranı bekleniyor.
+01:34:50 Dövüş sürüyor (19 sn); sonuç ekranı bekleniyor.
+01:34:51 Dövüş sürüyor (20 sn); sonuç ekranı bekleniyor.
+01:34:52 Dövüş sürüyor (22 sn); sonuç ekranı bekleniyor.
+01:34:54 Dövüş sürüyor (23 sn); sonuç ekranı bekleniyor.
+01:34:55 Dövüş sürüyor (24 sn); sonuç ekranı bekleniyor.
+01:34:56 Dövüş sürüyor (25 sn); sonuç ekranı bekleniyor.
+01:34:57 Yeni ekran görüntüsü hazır değil; tıklamadan tekrar denenecek.
+01:34:58 Dövüş sürüyor (27 sn); sonuç ekranı bekleniyor.
+01:34:59 Dövüş sürüyor (29 sn); sonuç ekranı bekleniyor.
+01:35:00 Yeni ekran görüntüsü hazır değil; tıklamadan tekrar denenecek.
+01:35:01 Dövüş sürüyor (30 sn); sonuç ekranı bekleniyor.
+01:35:03 Dövüş sürüyor (32 sn); sonuç ekranı bekleniyor.
+01:35:03 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:35:05 Avlan haritası görünmüyor veya ekran değişti.
+01:35:15 Sonuç düğmesi son kontrolde görünmedi; yeniden okunacak.
+01:35:15 Durdurma komutu alındı.
+01:35:15 Bitti. Saldırı denemesi: 1 | tamamlanan döngü: 0 | kaydırma: 0
+01:40:13 Yaratık avı: tümü | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+01:40:15 Phadd Ayisi [5] seçildi: (1103, 733). Saldır düğmesi bekleniyor.
+01:40:16 Phadd Ayisi [5] doğrulandı; saldırılıyor (1).
+01:40:20 Provokasyon açılıyor; çağırma çubuğu bekleniyor.
+01:40:26 Çağırma çubuğu açılmadı; provokasyon atlandı. Son kare runtime/last-provoke.png içine kaydedildi.
+01:40:28 Binek çağırılıyor.
+01:40:28 Oyun penceresi odakta değil; fare durduruldu.
+01:40:29 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:40:42 Yeni ekran görüntüsü hazır değil; tıklamadan tekrar denenecek.
+01:40:42 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:40:49 Durdurma komutu alındı.
+01:40:49 Bitti. Saldırı denemesi: 1 | tamamlanan döngü: 0 | kaydırma: 0
+01:45:43 Yaratık avı: tümü | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+01:45:44 Phadd Ayisi[Z [4] seçildi: (513, 723). Saldır düğmesi bekleniyor.
+01:45:46 Oyun penceresi odakta değil; fare durduruldu.
+01:45:46 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:45:49 Durdurma komutu alındı.
+01:45:49 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+01:49:52 Yaratık avı: tümü | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+01:49:54 Phadd Ayisi [5] seçildi: (733, 593). Saldır düğmesi bekleniyor.
+01:49:55 Phadd Ayisi [5] doğrulandı; saldırılıyor (1).
+01:49:59 Provokasyon açılıyor; çağırma çubuğu bekleniyor.
+01:49:59 Çağırma çubuğu açık: 2 slot. Sıra: 5, 5.
+01:50:14 1. slottan 5 yaratık çağrıldı.
+01:50:29 2. slottan 5 yaratık çağrıldı.
+01:50:31 Binek çağırılıyor.
+01:50:31 Oyun penceresi odakta değil; fare durduruldu.
+01:50:31 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:50:48 Yeni ekran görüntüsü hazır değil; tıklamadan tekrar denenecek.
+01:50:50 Avlan haritası görünmüyor veya ekran değişti.
+01:50:50 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:51:21 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:51:51 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:52:21 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:52:29 Avlan haritası görünmüyor veya ekran değişti.
+01:52:48 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:52:50 Avlan haritası görünmüyor veya ekran değişti.
+01:52:52 Dövüş bitti (1); "Ava" ile haritaya dönülüyor.
+01:52:52 Oyun ekranı geri geldi; kararlı görüntü bekleniyor.
+01:52:54 Ekran doğrulandı; devam ediliyor.
+01:52:54 Dövüş tamamlandı, haritaya dönüldü. Tamamlanan: 1.
+01:52:54 Arama sürüyor; seçtiğiniz yaratıklardan henüz bulunamadı.
+01:52:59 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:53:00 Durdurma komutu alındı.
+01:53:00 Bitti. Saldırı denemesi: 1 | tamamlanan döngü: 1 | kaydırma: 0
+01:55:16 Yaratık avı: Yaşlı Phadd Ayısı | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+01:55:28 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:55:32 Durdurma komutu alındı.
+01:55:32 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+01:55:32 Yaratık avı: Yaşlı Phadd Ayısı | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+01:55:42 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:55:47 Durdurma komutu alındı.
+01:55:47 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+01:55:47 Yaratık avı: Yaşlı Phadd Ayısı | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+01:55:49 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+01:55:51 Durdurma komutu alındı.
+01:55:51 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+02:00:22 Yaratık avı: Yaşlı Phadd Ayısı | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+02:00:23 Görünen yaratıklar atlandı: phadd ayisi[5]: seçili değil
+02:00:30 Yeni ekran görüntüsü hazır değil; tıklamadan tekrar denenecek.
+02:00:33 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:00:39 Oyun ekranı geri geldi; kararlı görüntü bekleniyor.
+02:00:41 Yeni ekran görüntüsü hazır değil; tıklamadan tekrar denenecek.
+02:00:42 Oyun ekranı geri geldi; kararlı görüntü bekleniyor.
+02:00:43 Ekran doğrulandı; devam ediliyor.
+02:00:44 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:00:45 Durdurma komutu alındı.
+02:00:45 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+02:01:03 Yaratık avı: Yaşlı Phadd Ayısı | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+02:01:04 Görünen yaratıklar atlandı: ?[None]: tanınmadı; phadd ayisi[5]: seçili değil
+02:01:09 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:01:10 Durdurma komutu alındı.
+02:01:10 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+02:03:56 Yaratık avı: Yaşlı Phadd Ayısı | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+02:03:59 Yasli Phadd Ayisi [6] seçildi: (834, 593). Saldır düğmesi bekleniyor.
+02:04:01 Yasli Phadd Ayisi [6] doğrulandı; saldırılıyor (1).
+02:04:08 Provokasyon açılıyor; çağırma çubuğu bekleniyor.
+02:04:09 Çağırma çubuğu açık: 2 slot. Sıra: 5, 5.
+02:04:27 1. slottan 5 yaratık çağrıldı.
+02:04:43 2. slottan 5 yaratık çağrıldı.
+02:04:47 Otomatik savaş açılıyor.
+02:04:54 Binek çağırılıyor.
+02:04:56 Oyun penceresi odakta değil; fare durduruldu.
+02:04:56 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:05:26 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:05:56 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:06:00 Avlan haritası görünmüyor veya ekran değişti.
+02:06:00 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:06:30 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:06:55 Avlan haritası görünmüyor veya ekran değişti.
+02:07:00 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:07:13 Avlan haritası görünmüyor veya ekran değişti.
+02:07:16 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:07:35 Avlan haritası görünmüyor veya ekran değişti.
+02:07:37 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:08:07 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:08:37 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:09:07 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:09:37 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:10:08 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:10:38 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:11:08 Avlan haritası görünmüyor veya ekran değişti.
+02:11:08 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:11:38 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:12:08 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:12:38 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:12:49 Avlan haritası görünmüyor veya ekran değişti.
+02:12:49 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:12:51 Avlan haritası görünmüyor veya ekran değişti.
+02:12:51 Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.
+02:12:54 Durdurma komutu alındı.
+02:12:54 Bitti. Saldırı denemesi: 1 | tamamlanan döngü: 0 | kaydırma: 0
+02:13:03 Yaratık avı: Yaşlı Phadd Ayısı | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+02:13:05 Yasli Phadd Ayisi [6] seçildi: (1267, 324). Saldır düğmesi bekleniyor.
+02:13:06 Yasli Phadd Ayisi [6] doğrulandı; saldırılıyor (1).
+02:13:09 Provokasyon açılıyor; çağırma çubuğu bekleniyor.
+02:13:10 Çağırma çubuğu açık: 2 slot. Sıra: 5, 5.
+02:13:19 1. slottan 5 yaratık çağrıldı.
+02:13:28 2. slottan 5 yaratık çağrıldı.
+02:13:30 Otomatik savaş açılıyor.
+02:13:34 Binek çağırılıyor.
+02:13:37 Bekleyen eylem onayı görüldü; Uygula deneniyor.
+02:13:38 Bot hata nedeniyle durdu. Fare işlemleri sona erdi.
+Traceback (most recent call last):
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/main.py", line 784, in main
+    bot.tick()
+    ~~~~~~~~^^
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/hunt.py", line 203, in tick
+    self.confirm_pending_action(1.5)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/hunt.py", line 427, in confirm_pending_action
+    self.mouse.click(*self.pixel_to_desktop(button, fresh),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     before_click=lambda p=button: self.confirm_guard(p))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/mouse_control.py", line 97, in click
+    corrected = before_click()
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/hunt.py", line 428, in <lambda>
+    before_click=lambda p=button: self.confirm_guard(p))
+                                  ~~~~~~~~~~~~~~~~~~^^^
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/hunt.py", line 408, in confirm_guard
+    res = cv2.matchTemplate(region, self.vision.apply_template, cv2.TM_CCOEFF_NORMED)
+cv2.error: OpenCV(5.0.0) /io/opencv/modules/imgproc/src/templmatch.cpp:1179: error: (-215:Assertion failed) _img.size().height <= _templ.size().height && _img.size().width <= _templ.size().width in function 'matchTemplate'
+
+02:13:39 Bitti. Saldırı denemesi: 1 | tamamlanan döngü: 0 | kaydırma: 0
+02:25:47 Yaratık avı: Yaşlı Phadd Ayısı | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+02:25:47 Bot hata nedeniyle durdu. Fare işlemleri sona erdi.
+Traceback (most recent call last):
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/main.py", line 784, in main
+    bot.tick()
+    ~~~~~~~~^^
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/hunt.py", line 214, in tick
+    frame = self.detector.capture()
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/screen_detector.py", line 132, in capture
+    portal = self._capture_portal()
+  File "/home/meliheeren/Masaüstü/dwar_fishing_bot/screen_detector.py", line 172, in _capture_portal
+    if _PORTAL_CAPTURE is None:
+       ^^^^^^^^^^^^^^^
+NameError: name '_PORTAL_CAPTURE' is not defined
+02:25:48 Bitti. Saldırı denemesi: 0 | tamamlanan döngü: 0 | kaydırma: 0
+02:35:30 Yaratık avı: Yaşlı Phadd Ayısı | seviye *-* | dövüş: provokasyon+binek+oto-savaş | F8: duraklat/devam | F9: durdur | kaydırma: False
+02:35:37 Yasli Phadd Ayisi [6] seçildi: (512, 686). Saldır düğmesi bekleniyor.
+02:35:39 Yasli Phadd Ayisi [6] doğrulandı; saldırılıyor (1).
+02:35:45 Provokasyon açılıyor; çağırma çubuğu bekleniyor.
+02:35:46 Çağırma çubuğu açık: 2 slot. Sıra: 5, 5.
+02:35:52 Çağırma çubuğu kapandı; kalan çağrılar atlandı.
+02:35:56 Otomatik savaş açılıyor.
+02:36:03 Binek çağırılıyor.
+02:36:09 Eylem onayı Uygula ile verildi.
+02:36:14 Dövüş sürüyor (33 sn); sonuç ekranı bekleniyor.
+02:36:18 Dövüş sürüyor (37 sn); sonuç ekranı bekleniyor.
+02:36:22 Dövüş sürüyor (41 sn); sonuç ekranı bekleniyor.
+02:36:26 Dövüş sürüyor (45 sn); sonuç ekranı bekleniyor.
+02:36:30 Dövüş sürüyor (49 sn); sonuç ekranı bekleniyor.
+02:36:33 Dövüş sürüyor (53 sn); sonuç ekranı bekleniyor.
+02:36:38 Dövüş sürüyor (57 sn); sonuç ekranı bekleniyor.
+02:36:43 Dövüş sürüyor (62 sn); sonuç ekranı bekleniyor.
+02:36:47 Dövüş sürüyor (66 sn); sonuç ekranı bekleniyor.
+02:36:51 Dövüş sürüyor (70 sn); sonuç ekranı bekleniyor.
+02:36:55 Dövüş sürüyor (74 sn); sonuç ekranı bekleniyor.
+02:36:58 Dövüş sürüyor (78 sn); sonuç ekranı bekleniyor.
+02:37:02 Dövüş sürüyor (82 sn); sonuç ekranı bekleniyor.
+02:37:06 Dövüş sürüyor (86 sn); sonuç ekranı bekleniyor.
+02:37:10 Dövüş sürüyor (89 sn); sonuç ekranı bekleniyor.
+02:37:12 Dövüş 90 sn içinde bitmedi. Ekranı kontrol edip F8 ile devam edin.
+02:37:13 Elle duraklatıldı. Devam: F8. Durdur: F9.
+02:37:43 Elle duraklatıldı. Devam: F8. Durdur: F9.
+02:37:47 Durdurma komutu alındı.
+02:37:47 Bitti. Saldırı denemesi: 1 | tamamlanan döngü: 0 | kaydırma: 0
