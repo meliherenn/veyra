@@ -97,6 +97,12 @@ HUNT_CLICK_DY_FALLBACKS = (-37, -30, -44, 0)
 # yazısı V≈251-254 olduğu için 248 üstü yalnız yazıyı bırakır.
 HUNT_LABEL_MIN_V = 248
 HUNT_LABEL_MIN_S = 200
+# Kırmızı etiketli haritalar (Kral Akrep): yazı hue ~6, S 255, koyu zeminde
+# V 180-250. Arka plan V≈149 olduğundan V>=160 güvenli; seçim halkası (hue 6,
+# S 255) boyut filtresiyle elenir (halka yüksekliği etiketten çok büyük).
+HUNT_RED_LABEL_HUES = ((0, 10), (172, 180))
+HUNT_RED_LABEL_MIN_S = 180
+HUNT_RED_LABEL_MIN_V = 160
 # Saldır düğmesi şablonu (renkli eşleşme): yanlışlar <=0.63, doğru simge ~1.0.
 HUNT_ATTACK_TEMPLATE_THRESHOLD = 0.80
 # Etiket/başlık adı için bulanık eşleşme alt sınırı (OCR küçük harf hatası yapar).

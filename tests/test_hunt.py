@@ -108,6 +108,23 @@ def test_bear_map_labels_found_beside_bright_grass(detector, vision):
     assert all(t.color == 'sari' for t in found)
 
 
+def test_scorpion_map_red_labels_are_found_and_read(detector, vision):
+    """Kral Akrep haritasının etiketleri parlak kırmızıdır (hue ~6, S 255) ve
+    seçim halkası da kırmızıdır; eski sarı/yeşil bandı hiç etiket görmüyordu."""
+    f = frame('hunt-scorpions-map.png')
+    layout = detector.detect_layout(f)
+    assert layout is not None
+    found = vision.find_labels(f, layout)
+    assert len(found) >= 6
+    assert all(t.color == 'kirmizi' for t in found)
+    readable = [vision.read_label(f, t, accept=lambda name: True) for t in found]
+    names = [r.name for r in readable]
+    assert sum('kral akrep' in n for n in names) >= 4
+    assert any('buyuk akrep' in n for n in names if n)
+    # Kırmızı seçim halkası (~1097, 470) etiket adayı sanılmamalı.
+    assert not [t for t in found if abs(t.x - 1097) <= 12 and abs(t.y - 470) <= 12]
+
+
 def test_click_point_lands_on_the_creature_sprite(detector, vision):
     f = frame('hunt-selected.png')
     layout = detector.detect_layout(f)
@@ -254,8 +271,9 @@ def test_confirm_apply_clicks_the_dialog_button(mocked):
     bot = mocked
     bot.args.dry_run = False
     bot.detector.capture_screen.return_value = np.zeros((1080, 1920, 3), np.uint8)
+    bot.detector.protection_template.return_value = False
     apply_point = (960, 540)
-    bot.vision.confirm_apply_button.side_effect = [apply_point, None]
+    bot.vision.confirm_apply_button.return_value = apply_point
     bot.detector.check_bot_protection.return_value = (False, '')
     assert bot.confirm_pending_action(window=1.0) is True
     assert bot.desktop.allow_action_popup is False  # akış sonunda izin kapanır
@@ -571,17 +589,19 @@ def test_fight_guard_clicks_despite_hover_but_not_on_map_return(mocked):
     dönünce ya da sonuç penceresi çıkınca tıklama iptal edilir."""
     bot = mocked
     bot.args.dry_run = False
+    bot.detector.protection_template.return_value = False
     # Dövüş ekranı: harita yok, sonuç penceresi yok -> guard geçer.
+    bot.detector.detect_layout.return_value = None
     bot.detector.observe.return_value = Observation(None)
     bot.vision.result_button.return_value = None
     bot.detector.check_bot_protection.return_value = (False, '')
     bot.fight_guard('provoke', (50, 100))
     # Harita döndüyse dövüş bitmiştir: basma.
-    bot.detector.observe.return_value = Observation(Layout(193, 238, 1713, 764))
+    bot.detector.detect_layout.return_value = Layout(193, 238, 1713, 764)
     with pytest.raises(InterruptedError, match='Dövüş ekranı değişti'):
         bot.fight_guard('provoke', (50, 100))
     # Sonuç penceresi çıktıysa dövüş bitti: basma.
-    bot.detector.observe.return_value = Observation(None)
+    bot.detector.detect_layout.return_value = None
     bot.vision.result_button.return_value = (1000, 254)
     with pytest.raises(InterruptedError, match='Dövüş ekranı değişti'):
         bot.fight_guard('auto', (50, 244))
@@ -590,17 +610,21 @@ def test_fight_guard_clicks_despite_hover_but_not_on_map_return(mocked):
 def test_summon_guard_allows_hovered_slot_but_stops_when_bar_closes(mocked):
     bot = mocked
     bot.args.dry_run = False
+    bot.detector.protection_template.return_value = False
+    bot.detector.detect_layout.return_value = None
     bot.detector.observe.return_value = Observation(None)
     bot.detector.check_bot_protection.return_value = (False, '')
     bot.vision.result_button.return_value = None
-    # İmleç slotun üstünde: slot listesi boş dönse bile kilitli slotlar
-    # çubuğun hâlâ açık olduğunu kanıtlar -> tıklanır.
+    frame = np.zeros((1080, 1920, 3), np.uint8)
+    # Döngü aynı karede slotu doğruladıysa (bar_open) ikinci tarama yapılmaz.
+    bot.vision.summon_slots.return_value = ([], [])
+    bot.summon_guard((100, 200), frame, bar_open=True)
     bot.vision.summon_slots.return_value = ([], [(300, 200)])
-    bot.summon_guard((100, 200))
+    bot.summon_guard((100, 200), frame)
     # Çubuk tamamen kapandı: basma.
     bot.vision.summon_slots.return_value = ([], [])
     with pytest.raises(InterruptedError, match='çubuğu kapandı'):
-        bot.summon_guard((100, 200))
+        bot.summon_guard((100, 200), frame)
 
 
 def test_fight_actions_click_provoke_summon_mount_then_auto(mocked):
@@ -637,20 +661,23 @@ def test_fight_actions_run_once_per_fight(mocked, monkeypatch):
 
 
 def test_pending_confirm_is_retried_during_fight_wait(mocked, monkeypatch):
-    """Onay tıklaması odağı kaybedince yarım kalmıştı; dövüş beklerken Uygula
-    bir kez daha denenir, pencere yoksa boşuna bakınılmaz."""
+    """Onay popup'ı odağı aldığında bot 'oyun önde değil' bekler; bu bekleyiş
+    sırasında bekleyen Uygula penceresi görünürse tıklanır."""
     bot = mocked
     bot.provoke = bot.mount_summon = bot.auto_battle = True
     bot.fight_actions_done = True
     bot.confirm_retries = 0
     bot.last_confirm_check = 0.0
-    bot.phase, bot.engaged_at = 'ENGAGED', main.time.monotonic()
-    bot.vision.confirm_apply_button.side_effect = [(960, 540), None]
+    bot.phase = 'ENGAGED'
+    bot.vision.confirm_apply_button.side_effect = [(960, 540)]
+    bot.vision.confirm_apply_button.return_value = None
     performed = []
     monkeypatch.setattr(bot, 'confirm_pending_action', lambda window=1.5: performed.append(window))
-    obs = SimpleNamespace(blocked=None, layout=None)
-    bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, main.time.monotonic())
-    bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, main.time.monotonic() + 2)
+    bot.desktop.is_game_active = lambda: False
+    bot.desktop.state = {'app': 'brave', 'title': 'Eylem «Endarg Madalyonu Kullanma» - Brave',
+                         'geometry': [0, 0, 1920, 1080], 'screens': 1}
+    bot.tick()
+    bot.tick()
     assert performed == [1.5] and bot.confirm_retries == 1
 
 

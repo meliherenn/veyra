@@ -9,7 +9,8 @@ import cv2
 import numpy as np
 
 from config import (ROOT, HUNT_SPRITE_DY, HUNT_LABEL_MIN_V, HUNT_LABEL_MIN_S,
-                    HUNT_ATTACK_TEMPLATE_THRESHOLD, HUNT_FIGHT_BUTTON_THRESHOLD)
+                    HUNT_ATTACK_TEMPLATE_THRESHOLD, HUNT_FIGHT_BUTTON_THRESHOLD,
+                    HUNT_RED_LABEL_HUES, HUNT_RED_LABEL_MIN_S, HUNT_RED_LABEL_MIN_V)
 from hunt_catalog import parse_label
 from metrics import METRICS
 
@@ -92,7 +93,13 @@ class HuntVision:
         s = self.scale(layout)
         ox, oy = layout.left + 3, layout.top + 3
         hsv = cv2.cvtColor(crop, cv2.COLOR_RGB2HSV)
+        # Sarı/altın (hue 15-45) ve kırmızı (hue ~6, koyu zeminli akrep
+        # haritaları) etiketler iki ayrı bantta; kırmızı seçim halkası da aynı
+        # tonda olsa boyut filtresi onu eler.
         mask = cv2.inRange(hsv, (HUE_LO, HUNT_LABEL_MIN_S, HUNT_LABEL_MIN_V), (HUE_HI, 255, 255))
+        for lo, hi in HUNT_RED_LABEL_HUES:
+            mask |= cv2.inRange(hsv, (lo, HUNT_RED_LABEL_MIN_S, HUNT_RED_LABEL_MIN_V),
+                                (hi, 255, 255))
         if not mask.any():
             return []
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (max(3, round(9*s)), 3))
@@ -111,7 +118,13 @@ class HuntVision:
             if sprite_y < layout.top + 8:
                 continue
             hues = hsv[y:y+h, x:x+w][mask[y:y+h, x:x+w] > 0][:, 0]
-            color = 'sari' if float(np.median(hues)) < YELLOW_MAX_HUE else 'yesil'
+            hue_med = float(np.median(hues))
+            if hue_med < 10 or hue_med > 172:
+                color = 'kirmizi'
+            elif hue_med < YELLOW_MAX_HUE:
+                color = 'sari'
+            else:
+                color = 'yesil'
             found.append(Sighting(cx, sprite_y, cx, cy, w, h, color))
         return sorted(found, key=lambda t: (t.label_y, t.label_x))
 
@@ -124,18 +137,25 @@ class HuntVision:
         y0, y1 = sighting.label_y - sighting.height//2 - 4, sighting.label_y + sighting.height//2 + 5
         return frame[max(0, y0):y1, max(0, x0):x1]
 
+    def _label_text_mask(self, hsv, smin, vmin):
+        """Yazı maskesi: sarı/altın ve kırmızı etiket tonları birlikte."""
+        mask = cv2.inRange(hsv, (HUE_LO, smin, vmin), (HUE_HI, 255, 255))
+        for lo, hi in HUNT_RED_LABEL_HUES:
+            mask |= cv2.inRange(hsv, (lo, smin, vmin), (hi, 255, 255))
+        return mask
+
     def read_label(self, frame, sighting, accept=None):
         """Etiketi OCR ile oku (ad + seviye).
 
-        Etiketler küçük ve çim üstünde olduğundan tek bir ön işleme yetmez: makul
-        bir okuma (seviye var ve accept(ad) doğru) çıkana kadar varyantlar denenir.
-        Sonuç, etiketin yazı maskesine göre önbelleğe alınır.
+        Etiketler küçük ve zemin üstünde olduğundan tek bir ön işleme yetmez:
+        makul bir okuma (seviye var ve accept(ad) doğru) çıkana kadar varyantlar
+        denenir. Sonuç, etiketin yazı maskesine göre önbelleğe alınır.
         """
         crop = self._label_crop(frame, sighting)
         if crop.size == 0:
             return sighting
         hsv = cv2.cvtColor(crop, cv2.COLOR_RGB2HSV)
-        primary = cv2.inRange(hsv, (HUE_LO, 180, 120), (HUE_HI, 255, 255))
+        primary = self._label_text_mask(hsv, 180, 120)
         key = (primary.shape, hashlib.blake2b(primary.tobytes(), digest_size=12).digest())
         cached = self._label_cache.get(key)
         if cached is None:
@@ -149,7 +169,7 @@ class HuntVision:
     def _read_variants(self, hsv, accept):
         fallback = None
         for smin, vmin, scale, psm in self.OCR_VARIANTS:
-            mask = cv2.inRange(hsv, (HUE_LO, smin, vmin), (HUE_HI, 255, 255))
+            mask = self._label_text_mask(hsv, smin, vmin)
             if not mask.any():
                 continue
             clean = cv2.resize(255 - mask, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
