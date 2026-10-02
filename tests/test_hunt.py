@@ -108,6 +108,34 @@ def test_bear_map_labels_found_beside_bright_grass(detector, vision):
     assert all(t.color == 'sari' for t in found)
 
 
+def test_label_gate_is_loose_but_header_gate_is_strict():
+    """Harita etiketi gürültülü okunur (gevşek kapı); kesin karar büyük yazılı
+    üst bilgi kutusunun sıkı eşiğindedir. 'Phadd Ayisi' ile 'Yasli Phadd
+    Ayisi' (0.785) bu sayede karışmaz."""
+    from config import HUNT_LABEL_MATCH_RATIO, HUNT_NAME_MATCH_RATIO
+    from hunt_catalog import Species, match_species
+    flangariyl = (Species('flangariyl', 'Flangariyl Korr Yavrusu'),)
+    assert match_species('flungyuriy kore yavrusul', flangariyl, HUNT_LABEL_MATCH_RATIO)
+    yasli = (Species('yasli', 'Yasli Phadd Ayisi'),)
+    assert match_species('phadd ayisi', yasli, HUNT_LABEL_MATCH_RATIO)   # kapıdan geçer
+    assert match_species('phadd ayisi', yasli, HUNT_NAME_MATCH_RATIO) is None  # üst bilgi engeller
+
+
+def test_lagoon_map_labels_of_any_color_are_found(detector, vision):
+    """Koyu lagün haritası: etiketler hue 60 yeşil ve S 139 altın — renk
+    bantlarının hiçbirine uymuyordu. Kontrast ağı rengi önemsiz kılar; her
+    yeni harita için renk raporu gerekmez."""
+    f = frame('hunt-lagoon-map.png')
+    layout = detector.detect_layout(f)
+    assert layout is not None
+    found = vision.find_labels(f, layout)
+    assert len(found) >= 4
+    readable = [vision.read_label(f, t, accept=lambda name: True) for t in found]
+    names = [r.name for r in readable if r.name]
+    assert any('yavrusu' in n.replace('yavrusul', 'yavrusu') for n in names)
+    assert all(r.level == 9 for r in readable if r.name)
+
+
 def test_scorpion_map_red_labels_are_found_and_read(detector, vision):
     """Kral Akrep haritasının etiketleri parlak kırmızıdır (hue ~6, S 255) ve
     seçim halkası da kırmızıdır; eski sarı/yeşil bandı hiç etiket görmüyordu."""

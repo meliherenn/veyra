@@ -10,7 +10,8 @@ import numpy as np
 
 from config import (ROOT, HUNT_SPRITE_DY, HUNT_LABEL_MIN_V, HUNT_LABEL_MIN_S,
                     HUNT_ATTACK_TEMPLATE_THRESHOLD, HUNT_FIGHT_BUTTON_THRESHOLD,
-                    HUNT_RED_LABEL_HUES, HUNT_RED_LABEL_MIN_S, HUNT_RED_LABEL_MIN_V)
+                    HUNT_RED_LABEL_HUES, HUNT_RED_LABEL_MIN_S, HUNT_RED_LABEL_MIN_V,
+                    HUNT_TEXT_MIN_V, HUNT_TEXT_MIN_S, HUNT_TEXT_CONTRAST)
 from hunt_catalog import parse_label
 from metrics import METRICS
 
@@ -100,6 +101,13 @@ class HuntVision:
         for lo, hi in HUNT_RED_LABEL_HUES:
             mask |= cv2.inRange(hsv, (lo, HUNT_RED_LABEL_MIN_S, HUNT_RED_LABEL_MIN_V),
                                 (hi, 255, 255))
+        # Renkten bağımsız ağ: parlak + doygun + koyu zeminine kontrastlı her
+        # yazı. Yeni haritaların etiket renklerini tahmin etmeye gerek kalmasın.
+        value = hsv[:, :, 2].astype(np.int16)
+        sat = hsv[:, :, 1]
+        local = cv2.blur(hsv[:, :, 2], (25, 25)).astype(np.int16)
+        mask |= ((value >= HUNT_TEXT_MIN_V) & (sat >= HUNT_TEXT_MIN_S)
+                 & (value - local >= HUNT_TEXT_CONTRAST)).astype(np.uint8)
         if not mask.any():
             return []
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (max(3, round(9*s)), 3))
@@ -116,6 +124,12 @@ class HuntVision:
             cx, cy = x + w//2 + ox, y + h//2 + oy
             sprite_y = round(cy + HUNT_SPRITE_DY*s)
             if sprite_y < layout.top + 8:
+                continue
+            # Yazı çok sayıda harf parçasından oluşur; seçim halkasının yayı
+            # tek parçadır (kontrast ağı yayları da yakalıyordu). Ham maskede
+            # adayın içindeki bileşen sayısı < 3 ise yazı değildir.
+            if cv2.connectedComponentsWithStats(
+                    mask[y:y+h, x:x+w], connectivity=8)[0] - 1 < 3:
                 continue
             hues = hsv[y:y+h, x:x+w][mask[y:y+h, x:x+w] > 0][:, 0]
             hue_med = float(np.median(hues))
@@ -138,10 +152,14 @@ class HuntVision:
         return frame[max(0, y0):y1, max(0, x0):x1]
 
     def _label_text_mask(self, hsv, smin, vmin):
-        """Yazı maskesi: sarı/altın ve kırmızı etiket tonları birlikte."""
+        """Yazı maskesi: renk bantları + renkten bağımsız kontrast ağı."""
         mask = cv2.inRange(hsv, (HUE_LO, smin, vmin), (HUE_HI, 255, 255))
         for lo, hi in HUNT_RED_LABEL_HUES:
             mask |= cv2.inRange(hsv, (lo, smin, vmin), (hi, 255, 255))
+        value = hsv[:, :, 2].astype(np.int16)
+        local = cv2.blur(hsv[:, :, 2], (25, 25)).astype(np.int16)
+        mask |= ((value >= HUNT_TEXT_MIN_V) & (hsv[:, :, 1] >= HUNT_TEXT_MIN_S)
+                 & (value - local >= HUNT_TEXT_CONTRAST)).astype(np.uint8)
         return mask
 
     def read_label(self, frame, sighting, accept=None):

@@ -97,6 +97,14 @@ HUNT_CLICK_DY_FALLBACKS = (-37, -30, -44, 0)
 # yazısı V≈251-254 olduğu için 248 üstü yalnız yazıyı bırakır.
 HUNT_LABEL_MIN_V = 248
 HUNT_LABEL_MIN_S = 200
+# Renkten bağımsız etiket tespiti: her haritanın etiket rengi farklı
+# (altın, kırmızı, hue 60 limon yeşili...). Etiket yazısı parlak (V>=200),
+# doygun (S>=80) ve KÖTÜ zeminine göre kontrastlıdır (V - bulanık V >= 60);
+# parlak-üzerine-parlak öğeler (çimen, çiçek) kontrast eşiğiyle elenir.
+HUNT_TEXT_MIN_V = 200
+HUNT_TEXT_MIN_S = 80
+HUNT_TEXT_CONTRAST = 60
+
 # Kırmızı etiketli haritalar (Kral Akrep): yazı hue ~6, S 255, koyu zeminde
 # V 180-250. Arka plan V≈149 olduğundan V>=160 güvenli; seçim halkası (hue 6,
 # S 255) boyut filtresiyle elenir (halka yüksekliği etiketten çok büyük).
@@ -105,8 +113,13 @@ HUNT_RED_LABEL_MIN_S = 180
 HUNT_RED_LABEL_MIN_V = 160
 # Saldır düğmesi şablonu (renkli eşleşme): yanlışlar <=0.63, doğru simge ~1.0.
 HUNT_ATTACK_TEMPLATE_THRESHOLD = 0.80
-# Etiket/başlık adı için bulanık eşleşme alt sınırı (OCR küçük harf hatası yapar).
+# Üst bilgi kutusu (büyük yazı, temiz OCR) için sıkı eşik: asıl doğrulama
+# buradadır. 'Phadd Ayisi' ile 'Yasli Phadd Ayisi' (0.785) burada ayrışır.
 HUNT_NAME_MATCH_RATIO = 0.82
+# Harita etiketi (küçük yazı, gürültülü OCR: 'flungyuriy kore yavrusul' gibi)
+# yalnızca ön filtre olduğu için daha gevşek eşik kullanılır; kesin karar
+# üst bilgi kutusunun sıkı eşiğiyle verilir.
+HUNT_LABEL_MATCH_RATIO = 0.75
 # Saldır tıklamasından sonra harita hâlâ görünüyorsa saldırı başlamamış sayılır.
 HUNT_ENGAGE_TIMEOUT = 8.0
 # Dövüş ekranının sonuç penceresine dönüşmesi için beklenen en uzun süre.

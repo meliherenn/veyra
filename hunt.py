@@ -21,7 +21,7 @@ from config import (POLL_INTERVAL, SELECT_TIMEOUT, TARGET_RETRY_SECONDS, NO_FISH
                     HUNT_SELECT_FAILURES_BEFORE_PAUSE, HUNT_AVOID_SECONDS,
                     HUNT_PROVOKE_BAR_TIMEOUT, HUNT_SUMMON_CLICK_PAUSE,
                     HUNT_FIGHT_SETTLE_SECONDS, HUNT_SUMMON_MAX_PER_SLOT,
-                    HUNT_CONFIRM_RETRIES)
+                    HUNT_CONFIRM_RETRIES, HUNT_LABEL_MATCH_RATIO)
 import config as _cfg
 from hunt_catalog import KNOWN, match_species, name_score, remember_seen, resolve_requested
 from hunt_vision import HuntVision
@@ -132,10 +132,16 @@ class HuntBot(FishingBot):
         return (target.label_x, round(target.label_y + self.click_dy*scale))
 
     def classify(self, frame, sighting):
-        """Etiketi oku ve türü çöz. Dönüş: (görülen, tür veya None)."""
-        seen = self.vision.read_label(frame, sighting,
-                                      accept=lambda name: match_species(name, self.pool) is not None)
-        species = match_species(seen.name, self.pool) if seen.name else None
+        """Etiketi oku ve türü çöz. Dönüş: (görülen, tür veya None).
+
+        Harita etiketi küçük ve gürültülü okunur ('flungyuriy kore yavrusul');
+        bu yüzden burada gevşek eşik kullanılır. Kesin karar, saldırıdan
+        hemen önceki üst bilgi kutusu doğrulamasının sıkı eşiğindedir.
+        """
+        seen = self.vision.read_label(
+            frame, sighting,
+            accept=lambda name: match_species(name, self.pool, HUNT_LABEL_MATCH_RATIO) is not None)
+        species = match_species(seen.name, self.pool, HUNT_LABEL_MATCH_RATIO) if seen.name else None
         if species:
             seen = replace(seen, species_id=species.id)
         return seen, species
@@ -589,12 +595,52 @@ class HuntBot(FishingBot):
                 return mask
         return None
 
-    def run_provoke(self, frame):
-        """Provokasyonu aç, çağırma çubuğunu bekle, slot sırasına göre çağır.
+    def _summon_slot(self, anchor_x, wanted):
+        """Tek slotta `wanted` adet çağır; işlenen tıklama sayısını döner.
 
-        Her tıklamadan önce slot yeniden doğrulanır; tıklama sonrası sayacın
-        camgöbeği rakamları değişmediyse (jeton bitti / sınır doldu) o slot
-        bitirilir. Dövüş biterse kalan çağrılar atlanır.
+        None: çubuk kapandı (çağrı akışından tamamen çıkılmalı). Her tıklamadan
+        önce slot yeniden doğrulanır; tıklama sonrası sayacın değişmesi
+        ~1.6 sn'ye kadar beklenir — 0.30 sn'lik aralık oyunun işleme
+        süresine yetmeyebiliyor (1/7, 1/7, 2/7 olayı).
+        """
+        previous_mask = None
+        summoned = 0
+        while summoned < wanted:
+            with METRICS.span('summon_capture'):
+                fresh = self.detector.capture()
+                current, _locks = self.vision.summon_slots(fresh)
+            slot = next((s for s in current if abs(s[0] - anchor_x) <= 10), None)
+            if slot is None:
+                slot, fresh = self._await_slot(anchor_x)
+                if slot is None:
+                    self.notice('Çağırma çubuğu kapandı; kalan çağrılar atlandı.')
+                    return None
+            mask = self.vision.counter_mask(fresh, slot[2])
+            if previous_mask is not None and mask is not None and np.array_equal(mask, previous_mask):
+                changed = self._await_counter_change(anchor_x, previous_mask)
+                if changed is None:
+                    self.notice(f'Sayaç değişmedi ({summoned} çağrı işledi); jeton bitmiş '
+                                'ya da sınır dolmuş olabilir. Kalan çağrılar atlandı.')
+                    break
+                mask = changed
+            with METRICS.span('summon_click'):
+                self.mouse.click(*self.pixel_to_desktop((slot[0], slot[1]), fresh),
+                                 before_click=lambda p=(slot[0], slot[1]), f=fresh:
+                                 self.summon_guard(p, f, bar_open=True))
+            summoned += 1
+            previous_mask = mask
+            METRICS.bump('summon')
+            time.sleep(HUNT_SUMMON_CLICK_PAUSE)
+        return summoned
+
+    def run_provoke(self, frame):
+        """Provokasyonu aç, çubuk oturana kadar bekle, slot sırasına göre çağır.
+
+        Çubuk animasyonla açılır: sayaçlar teker teker belirir ('1 slot' sanıp
+        diğerlerini atlamamak için) slot sayısı 1.2 sn artmadığında çubuk
+        'oturmuş' sayılır. Çağrılar bittikten sonra çubuk bir kez daha taranır;
+        geç beliren slotlar da çağrılır. Tanı için çubuğun ilk karesi
+        runtime/last-provoke.png içine kaydedilir.
         """
         if not self.click_fight_button(frame, 'provoke',
                                        'Provokasyon açılıyor; çağırma çubuğu bekleniyor.'):
@@ -615,64 +661,60 @@ class HuntBot(FishingBot):
             except (OSError, ValueError):
                 pass
             return
-        # Çubuk animasyonla açılır: sayaçlar teker teker belirir ('1 slot'
-        # sanıp diğerlerini atlamamak için) iki ardışık tarama aynı sayıda
-        # slot verene kadar beklenir.
-        stable_deadline = time.monotonic() + 3.0
-        previous_count = len(slots)
+        last_growth = time.monotonic()
+        last_count = len(slots)
+        stable_deadline = time.monotonic() + 4.0
         while time.monotonic() < stable_deadline:
-            time.sleep(0.4)
+            time.sleep(0.35)
             fresh = self.detector.capture()
             current, _locks = self.vision.summon_slots(fresh)
-            if current and len(current) == previous_count:
+            if len(current) > last_count:
+                last_count = len(current)
+                last_growth = time.monotonic()
                 slots = current
+            elif current:
+                slots = current
+            if time.monotonic() - last_growth >= 1.2:
                 break
-            previous_count = len(current)
-            if current:
-                slots = current
-        self.notice(f'Çağırma çubuğu açık: {len(slots)} slot. Sıra: '
-                    + ', '.join(str(self.provoke_counts[i] if i < len(self.provoke_counts) else 0)
+        slots.sort(key=lambda s: s[0])
+        counts = self.provoke_counts
+        self.notice(f'Çağırma çubuğu açık: {len(slots)} slot @ '
+                    + ','.join(str(s[0]) for s in slots) + '. Sıra: '
+                    + ', '.join(str(counts[i] if i < len(counts) else 0)
                                 for i in range(len(slots))) + '.')
-        for index in range(len(slots)):
-            wanted = self.provoke_counts[index] if index < len(self.provoke_counts) else 0
+        try:
+            Image.fromarray(fresh).save(main.RUNTIME / 'last-provoke.png')
+        except (OSError, ValueError):
+            pass
+        visited = []
+        for index, slot in enumerate(slots):
+            wanted = counts[index] if index < len(counts) else 0
             wanted = max(0, min(wanted, HUNT_SUMMON_MAX_PER_SLOT))
+            visited.append(slot[0])
             if not wanted:
                 continue
-            anchor_x = slots[index][0]
-            previous_mask = None
-            summoned = 0
-            while summoned < wanted:
-                with METRICS.span('summon_capture'):
-                    fresh = self.detector.capture()
-                    current, _locks = self.vision.summon_slots(fresh)
-                slot = next((s for s in current if abs(s[0] - anchor_x) <= 10), None)
-                if slot is None:
-                    # Çubuk animasyon geçişinde bir kareliğine kaybolabilir;
-                    # gerçekten kapandıysa çıkmadan önce geri gelmesini bekle.
-                    slot, fresh = self._await_slot(anchor_x)
-                    if slot is None:
-                        self.notice('Çağırma çubuğu kapandı; kalan çağrılar atlandı.')
-                        return
-                mask = self.vision.counter_mask(fresh, slot[2])
-                if previous_mask is not None and mask is not None and np.array_equal(mask, previous_mask):
-                    # 0.30 sn'lik aralık oyuna az gelmiş olabilir: sayacın
-                    # değişmesini kısa bir süre bekle, sonra karar ver.
-                    changed = self._await_counter_change(anchor_x, previous_mask)
-                    if changed is None:
-                        self.notice(f'{index + 1}. slotta sayaç değişmedi; jeton bitmiş ya da '
-                                    'sınır dolmuş olabilir. Kalan çağrılar atlandı.')
-                        break
-                    mask = changed
-                with METRICS.span('summon_click'):
-                    self.mouse.click(*self.pixel_to_desktop((slot[0], slot[1]), fresh),
-                                     before_click=lambda p=(slot[0], slot[1]), f=fresh:
-                                     self.summon_guard(p, f, bar_open=True))
-                summoned += 1
-                previous_mask = mask
-                METRICS.bump('summon')
-                time.sleep(HUNT_SUMMON_CLICK_PAUSE)
-            if summoned:
-                self.notice(f'{index + 1}. slottan {summoned} yaratık çağrıldı.')
+            got = self._summon_slot(slot[0], wanted)
+            if got is None:
+                return
+            if got:
+                self.notice(f'{index + 1}. slottan {got} yaratık çağrıldı.')
+        # Geç beliren slotlar: çağrılar bittikten sonra çubuğu yeniden tara.
+        fresh = self.detector.capture()
+        current, _locks = self.vision.summon_slots(fresh)
+        late = [s for s in current if all(abs(s[0] - ax) > 15 for ax in visited)]
+        ordered = sorted(current, key=lambda s: s[0])
+        for slot in late:
+            index = ordered.index(slot)
+            wanted = counts[index] if index < len(counts) else 0
+            wanted = max(0, min(wanted, HUNT_SUMMON_MAX_PER_SLOT))
+            visited.append(slot[0])
+            if not wanted:
+                continue
+            got = self._summon_slot(slot[0], wanted)
+            if got is None:
+                return
+            if got:
+                self.notice(f'{index + 1}. slottan {got} yaratık çağrıldı.')
 
     def finish_fight(self, frame, button, now):
         if self.args.dry_run:
