@@ -768,7 +768,7 @@ def test_skipped_fight_actions_run_when_toolbar_arrives_late(mocked):
     # Çubuk sonradan geldi: dövüş bekleme döngüsü atlananları uygular.
     state['toolbar'] = True
     bot.vision.result_button.return_value = None
-    bot.fight_idle(np.zeros((1080, 1920, 3), np.uint8), None, main.time.monotonic())
+    bot.fight_idle(np.zeros((1080, 1920, 3), np.uint8), main.time.monotonic())
     assert bot.mouse.click.call_count == 2   # auto + mount
     assert bot._pending_actions == []
 
