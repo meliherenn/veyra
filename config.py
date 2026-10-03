@@ -147,9 +147,11 @@ HUNT_AVOID_SECONDS = 25.0
 HUNT_FIGHT_BUTTON_THRESHOLD = 0.90
 # Provokasyon tıklamasından sonra çağırma çubuğunun çıkmasını bekleme süresi.
 HUNT_PROVOKE_BAR_TIMEOUT = 6.0
-# Her çağırma tıklaması arasında oyunun animasyonu/sayacı işleme süresi.
-# Kullanıcı tercihi hızlı tık tık: sayaç kıyası düşen tıklamayı yakalar.
-HUNT_SUMMON_CLICK_PAUSE = 0.30
+# Her çağırma tıklaması arasındaki asgari bekleme. Oyun tıklamayı anında
+# işliyor (kullanıcı: elle tık tık tık yaptığımda sayaç hemen artıyor);
+# eski 0.30 sn + 0.35 sn'lik yoklama darboğazdı. Koruma/odak/slot
+# doğrulaması her tıklamada aynen çalışır, yalnız ölü bekleme kalkar.
+HUNT_SUMMON_CLICK_PAUSE = 0.10
 # Dövüş ekranı açıldıktan sonra düğmelere basmadan önce beklenen oturma süresi.
 HUNT_FIGHT_SETTLE_SECONDS = 1.0
 # Çağırma slotu: sayaç "kullanilan/limit" yazar; tıklama sonrası sayaç

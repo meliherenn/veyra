@@ -598,11 +598,15 @@ class HuntBot(FishingBot):
                 return slot, fresh
         return None, None
 
-    def _await_counter_change(self, anchor_x, previous_mask, seconds=1.6):
-        """Tıklamanın işlenmesini bekler: sayaç değişirse yeni maskayı, değişmezse None döner."""
+    def _await_counter_change(self, anchor_x, previous_mask, seconds=1.2):
+        """Tıklamanın işlenmesini bekler: sayaç değişirse yeni maskayı, değişmezse None döner.
+
+        İlk kontrol beklemeden yapılır (tıklama arası 0.10 sn zaten geçmiştir),
+        ardından 0.15 sn adımlarla yoklanır."""
         deadline = time.monotonic() + seconds
-        while time.monotonic() < deadline:
-            time.sleep(0.35)
+        while True:
+            if time.monotonic() >= deadline:
+                return None
             fresh = self.detector.capture()
             current, _locks = self.vision.summon_slots(fresh)
             slot = next((s for s in current if abs(s[0] - anchor_x) <= 10), None)
@@ -611,7 +615,7 @@ class HuntBot(FishingBot):
             mask = self.vision.counter_mask(fresh, slot[2])
             if mask is not None and not np.array_equal(mask, previous_mask):
                 return mask
-        return None
+            time.sleep(0.15)
 
     def _summon_slot(self, anchor_x, wanted):
         """Tek slotta `wanted` adet çağır; işlenen tıklama sayısını döner.
