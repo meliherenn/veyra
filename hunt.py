@@ -556,32 +556,41 @@ class HuntBot(FishingBot):
                                            ('mount', self.mount_summon)) if enabled]
 
     def perform_fight_actions(self):
-        """Dövüş başladıktan sonra bir kez: provokasyon -> oto savaş -> binek."""
+        """Dövüş başladıktan sonra bir kez: provokasyon -> oto savaş -> binek.
+
+        Bekleme yerine doğrudan düğme yoklanır: araç çubuğu animasyonla
+        gelse de 0.2 sn'lik yoklamalar gelmesini yakalar (eskiden önce sabit
+        settle, sonra her yoklamada pahalı çok ölçekli arama vardı).
+        Provokasyon ile oto savaş arasında park yok (imleç çağırma çubuğunda,
+        araç çubuğundan uzak); yalnız oto->binek arasında korunur (düğmeler
+        47 px arayla üst üste, hover vurgusu sınırda).
+        """
         self.actions_done_at = time.monotonic()
-        time.sleep(HUNT_FIGHT_SETTLE_SECONDS)
         frame = self.detector.capture()
         kinds = self._enabled_fight_kinds()
-        # Araç çubuğu dövüşle birlikte animasyonla gelir; ilk karede
-        # görünmeyebilir (provoke 'görünmüyor' sanılıp kalıcı atlanmıştı).
         deadline = time.monotonic() + _cfg.HUNT_TOOLBAR_WAIT_SECONDS
         while kinds and time.monotonic() < deadline and not all(
                 self.vision.fight_button(frame, k) is not None for k in kinds):
-            time.sleep(0.25)
+            time.sleep(0.2)
             frame = self.detector.capture()
-        if kinds and not any(self.vision.fight_button(frame, k) for k in kinds):
-            self.notice('Dövüş araç çubuğu görünmedi; dövüş eylemleri atlandı.')
-            return
+        missing = [k for k in kinds if self.vision.fight_button(frame, k) is None]
+        if missing:
+            self.notice(f"Dövüş araç çubuğunda {', '.join(missing)} görünmedi; "
+                        'bu eylemler atlandı.')
+            kinds = [k for k in kinds if k not in missing]
+            if not kinds:
+                return
         if self.provoke:
             try:
                 self.run_provoke(frame)
             except InterruptedError as error:
                 self.notice(f'Provokasyon yarıda kaldı: {error}')
-        frame = self.capture_parked(frame)
         if self.auto_battle:
+            frame = self.detector.capture()
             if self.click_fight_button(frame, 'auto', 'Otomatik savaş açılıyor.'):
                 self.confirm_pending_action(HUNT_AUTO_CONFIRM_WINDOW)
-            frame = self.capture_parked(frame)
         if self.mount_summon:
+            frame = self.capture_parked(frame)
             if self.click_fight_button(frame, 'mount', 'Binek çağırılıyor.'):
                 self.confirm_pending_action(3.5)
         self.actions_done_at = time.monotonic()
