@@ -465,9 +465,14 @@ class HuntBot(FishingBot):
                 raise InterruptedError('Bot koruması; çağırma iptal edildi.')
             if self.vision.result_button(frame, self.scale_hint):
                 raise InterruptedError('Dövüş çağırma bitmeden bitti; çağırma durduruldu.')
-            if self.detector.detect_layout(frame) is not None:
-                raise InterruptedError('Haritaya dönüldü; çağırma durduruldu.')
             if not bar_open:
+                # bar_open ise döngü aynı karede slotu zaten doğruladı; harita
+                # kontrolü de çubuğun varlığıyla çeliemez, ikinci tarama gereksiz.
+                if self.detector.detect_layout(frame) is not None:
+                    raise InterruptedError('Haritaya dönüldü; çağırma durduruldu.')
+                slots, locks = self.vision.summon_slots(frame)
+                if not slots and not locks:
+                    raise InterruptedError('Çağırma çubuğu kapandı; çağırma durduruldu.')
                 # Döngü aynı karede slotu zaten doğruladıysa ikinci şablon taraması gereksiz.
                 slots, locks = self.vision.summon_slots(frame)
                 if not slots and not locks:
@@ -671,13 +676,14 @@ class HuntBot(FishingBot):
         return summoned
 
     def run_provoke(self, frame):
-        """Provokasyonu aç, çubuk oturana kadar bekle, slot sırasına göre çağır.
+        """Provokasyonu aç, İLK görünen slota hemen tık-tık'a başla.
 
-        Çubuk animasyonla açılır: sayaçlar teker teker belirir ('1 slot' sanıp
-        diğerlerini atlamamak için) slot sayısı 1.2 sn artmadığında çubuk
-        'oturmuş' sayılır. Çağrılar bittikten sonra çubuk bir kez daha taranır;
-        geç beliren slotlar da çağrılır. Tanı için çubuğun ilk karesi
-        runtime/last-provoke.png içine kaydedilir.
+        Çubuk animasyonla açılır ve slotlar teker teker belirir; eskiden
+        'oturmasını' beklemek 1.5-2.5 sn boş bekleme yaratıyordu. Artık slot
+        sayısı dinamik taranır: bir slot çağrıldıktan sonra çubuk yeniden
+        taranır, geç beliren slotlar da kendi adetleriyle çağrılır. Eşitsiz
+        adetlerde (3,2,4 gibi) sıra x konumuna göre soldan sağadır.
+        Tanı için çubuğun ilk karesi runtime/last-provoke.png'e kaydedilir.
         """
         if not self.click_fight_button(frame, 'provoke',
                                        'Provokasyon açılıyor; çağırma çubuğu bekleniyor.'):
@@ -689,7 +695,7 @@ class HuntBot(FishingBot):
             slots, _locks = self.vision.summon_slots(fresh)
             if slots:
                 break
-            time.sleep(0.3)
+            time.sleep(0.25)
         if not slots:
             self.notice('Çağırma çubuğu açılmadı; provokasyon atlandı. '
                         'Son kare runtime/last-provoke.png içine kaydedildi.')
@@ -698,60 +704,49 @@ class HuntBot(FishingBot):
             except (OSError, ValueError):
                 pass
             return
-        last_growth = time.monotonic()
-        last_count = len(slots)
-        stable_deadline = time.monotonic() + 4.0
-        while time.monotonic() < stable_deadline:
-            time.sleep(0.35)
-            fresh = self.detector.capture()
-            current, _locks = self.vision.summon_slots(fresh)
-            if len(current) > last_count:
-                last_count = len(current)
-                last_growth = time.monotonic()
-                slots = current
-            elif current:
-                slots = current
-            if time.monotonic() - last_growth >= 1.2:
-                break
-        slots.sort(key=lambda s: s[0])
-        counts = self.provoke_counts
-        self.notice(f'Çağırma çubuğu açık: {len(slots)} slot @ '
-                    + ','.join(str(s[0]) for s in slots) + '. Sıra: '
-                    + ', '.join(str(counts[i] if i < len(counts) else 0)
-                                for i in range(len(slots))) + '.')
         try:
             Image.fromarray(fresh).save(main.RUNTIME / 'last-provoke.png')
         except (OSError, ValueError):
             pass
+        counts = self.provoke_counts
         visited = []
-        for index, slot in enumerate(slots):
-            wanted = counts[index] if index < len(counts) else 0
+        summoned_total = 0
+        total_wanted = sum(max(0, min(c, HUNT_SUMMON_MAX_PER_SLOT)) for c in counts)
+        idle_since = None
+        last_new = time.monotonic()
+        deadline = time.monotonic() + 30.0
+        while time.monotonic() < deadline and summoned_total < total_wanted:
+            fresh = self.detector.capture()
+            current, _locks = self.vision.summon_slots(fresh)
+            current.sort(key=lambda s: s[0])
+            target, pos_index = None, None
+            for pos, s in enumerate(current):
+                if any(abs(s[0] - ax) <= 15 for ax in visited):
+                    continue
+                target, pos_index = s, pos
+                break
+            if target is None:
+                # Görünen slotların tamamı işlendi; yenisi belirirse çağrılır.
+                if idle_since is None:
+                    idle_since = time.monotonic()
+                if time.monotonic() - last_new > 2.0 and time.monotonic() - idle_since > 1.0:
+                    break
+                time.sleep(0.25)
+                continue
+            if len(current) > len(visited):
+                last_new = time.monotonic()
+            idle_since = None
+            visited.append(target[0])
+            wanted = counts[pos_index] if pos_index < len(counts) else 0
             wanted = max(0, min(wanted, HUNT_SUMMON_MAX_PER_SLOT))
-            visited.append(slot[0])
             if not wanted:
                 continue
-            got = self._summon_slot(slot[0], wanted)
+            got = self._summon_slot(target[0], wanted)
             if got is None:
                 return
+            summoned_total += got
             if got:
-                self.notice(f'{index + 1}. slottan {got} yaratık çağrıldı.')
-        # Geç beliren slotlar: çağrılar bittikten sonra çubuğu yeniden tara.
-        fresh = self.detector.capture()
-        current, _locks = self.vision.summon_slots(fresh)
-        late = [s for s in current if all(abs(s[0] - ax) > 15 for ax in visited)]
-        ordered = sorted(current, key=lambda s: s[0])
-        for slot in late:
-            index = ordered.index(slot)
-            wanted = counts[index] if index < len(counts) else 0
-            wanted = max(0, min(wanted, HUNT_SUMMON_MAX_PER_SLOT))
-            visited.append(slot[0])
-            if not wanted:
-                continue
-            got = self._summon_slot(slot[0], wanted)
-            if got is None:
-                return
-            if got:
-                self.notice(f'{index + 1}. slottan {got} yaratık çağrıldı.')
+                self.notice(f'{pos_index + 1}. slottan {got} yaratık çağrıldı.')
 
     def finish_fight(self, frame, button, now):
         if self.args.dry_run:
