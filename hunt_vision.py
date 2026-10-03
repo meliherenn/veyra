@@ -62,6 +62,7 @@ class HuntVision:
                 template = cv2.imread(str(path), cv2.IMREAD_COLOR)
                 if template is not None:
                     self.fight_templates[kind] = cv2.cvtColor(template, cv2.COLOR_BGR2RGB)
+        self._fight_scales = {}
         self.lock_template = None
         path = ROOT / 'assets' / 'hunt-slot-lock.png'
         if path.exists():
@@ -293,8 +294,8 @@ class HuntVision:
     # --------------------------------------------------------- dövüş içi eylemler
     @staticmethod
     def _best_match(frame, template, scales=(1.0, 0.9, 1.1)):
-        """Çok ölçekli şablon araması: (en iyi skor, merkez) döner."""
-        best = (0.0, None)
+        """Çok ölçekli şablon araması: (en iyi skor, merkez, kazanan ölçek) döner."""
+        best = (0.0, None, 1.0)
         for scale in scales:
             t = template if scale == 1.0 else cv2.resize(
                 template, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
@@ -303,7 +304,7 @@ class HuntVision:
             # minMaxLoc (minVal, maxVal, minLoc, maxLoc) döndürür; aranan maxVal'dir.
             _min, score, _min_loc, loc = cv2.minMaxLoc(cv2.matchTemplate(frame, t, cv2.TM_CCOEFF_NORMED))
             if score > best[0]:
-                best = (score, (loc[0] + t.shape[1]//2, loc[1] + t.shape[0]//2))
+                best = (score, (loc[0] + t.shape[1]//2, loc[1] + t.shape[0]//2), scale)
         return best
 
     def fight_button(self, frame, kind, threshold=None):
@@ -317,8 +318,21 @@ class HuntVision:
         if template is None:
             return None
         limit = HUNT_FIGHT_BUTTON_THRESHOLD if threshold is None else threshold
+        # Araç çubuğu ölçeği oturum boyunca değişmez: kazanan ölçeği hatırla,
+        # sonraki aramalar tek ölçekte yapılır (çok ölçekli arama ~0.4 sn idi).
+        scale = self._fight_scales.get(kind)
+        if scale is not None:
+            t = template if scale == 1.0 else cv2.resize(
+                template, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+            if t.shape[0] < frame.shape[0] and t.shape[1] < frame.shape[1]:
+                res = cv2.matchTemplate(frame, t, cv2.TM_CCOEFF_NORMED)
+                _, score, _, loc = cv2.minMaxLoc(res)
+                if score >= limit:
+                    return (loc[0] + t.shape[1]//2, loc[1] + t.shape[0]//2)
         with METRICS.span(f'fight_button_{kind}'):
-            score, center = self._best_match(frame, template)
+            score, center, won = self._best_match(frame, template)
+        if score >= limit and center:
+            self._fight_scales[kind] = won
         return center if score >= limit else None
 
     def confirm_apply_button(self, frame, threshold=0.86):

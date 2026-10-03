@@ -566,7 +566,7 @@ class HuntBot(FishingBot):
         deadline = time.monotonic() + _cfg.HUNT_TOOLBAR_WAIT_SECONDS
         while kinds and time.monotonic() < deadline and not all(
                 self.vision.fight_button(frame, k) is not None for k in kinds):
-            time.sleep(0.4)
+            time.sleep(0.25)
             frame = self.detector.capture()
         if kinds and not any(self.vision.fight_button(frame, k) for k in kinds):
             self.notice('Dövüş araç çubuğu görünmedi; dövüş eylemleri atlandı.')
@@ -674,7 +674,7 @@ class HuntBot(FishingBot):
             slots, _locks = self.vision.summon_slots(fresh)
             if slots:
                 break
-            time.sleep(0.5)
+            time.sleep(0.3)
         if not slots:
             self.notice('Çağırma çubuğu açılmadı; provokasyon atlandı. '
                         'Son kare runtime/last-provoke.png içine kaydedildi.')
