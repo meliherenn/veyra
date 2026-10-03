@@ -669,9 +669,10 @@ def test_fight_actions_click_provoke_summon_mount_then_auto(mocked):
     bot.vision.confirm_apply_button.return_value = None  # onay penceresi çıkmıyor
     bot.args.dry_run = False
     bot.perform_fight_actions()
-    assert bot.mouse.click.call_count == 4  # provoke + 1 çağırma + mount + auto
+    # provoke + 2'lik tık-tık topak + mount + auto
+    assert bot.mouse.click.call_count == 5
     xs = [call.args[0] for call in bot.mouse.click.call_args_list]
-    assert xs == [50, 100, 50, 50]
+    assert xs == [50, 100, 100, 50, 50]
     assert bot.provoke_counts == [2]
 
 

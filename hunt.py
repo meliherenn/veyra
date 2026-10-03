@@ -618,15 +618,17 @@ class HuntBot(FishingBot):
             time.sleep(0.15)
 
     def _summon_slot(self, anchor_x, wanted):
-        """Tek slotta `wanted` adet çağır; işlenen tıklama sayısını döner.
+        """Tek slotta `wanted` adeti tık-tık-tık düzeninde çağır.
 
-        None: çubuk kapandı (çağrı akışından tamamen çıkılmalı). Her tıklamadan
-        önce slot yeniden doğrulanır; tıklama sonrası sayacın değişmesi
-        ~1.6 sn'ye kadar beklenir — 0.30 sn'lik aralık oyunun işleme
-        süresine yetmeyebiliyor (1/7, 1/7, 2/7 olayı).
+        Kullanıcının elle yaptığı gibi adet arka arkaya tıklanır (tıklamalar
+        arasında ~0.12 sn), ardından sayaç bir kez doğrulanır: değiştiyse
+        çağrılar işlenmiş demektir, değişmediyse bir tur daha denenir, yine
+        değişmezse jeton bitmiş/sınır dolmuş sayılır ve durulur. Oyunun kendi
+        sınırı (7/7) aşırı çağırmayı zaten engeller.
         """
         previous_mask = None
         summoned = 0
+        miss_rounds = 0
         while summoned < wanted:
             with METRICS.span('summon_capture'):
                 fresh = self.detector.capture()
@@ -639,20 +641,24 @@ class HuntBot(FishingBot):
                     return None
             mask = self.vision.counter_mask(fresh, slot[2])
             if previous_mask is not None and mask is not None and np.array_equal(mask, previous_mask):
-                changed = self._await_counter_change(anchor_x, previous_mask)
-                if changed is None:
+                miss_rounds += 1
+                if miss_rounds > 2:
                     self.notice(f'Sayaç değişmedi ({summoned} çağrı işledi); jeton bitmiş '
                                 'ya da sınır dolmuş olabilir. Kalan çağrılar atlandı.')
                     break
-                mask = changed
-            with METRICS.span('summon_click'):
-                self.mouse.click(*self.pixel_to_desktop((slot[0], slot[1]), fresh),
-                                 before_click=lambda p=(slot[0], slot[1]), f=fresh:
-                                 self.summon_guard(p, f, bar_open=True))
-            summoned += 1
+                time.sleep(0.4)   # oyunun toplu tıklamayı işlemesine nefes
+                continue
+            miss_rounds = 0
             previous_mask = mask
-            METRICS.bump('summon')
-            time.sleep(HUNT_SUMMON_CLICK_PAUSE)
+            batch = min(wanted - summoned, 3)
+            with METRICS.span('summon_click'):
+                for _ in range(batch):
+                    self.mouse.click(*self.pixel_to_desktop((slot[0], slot[1]), fresh),
+                                     before_click=lambda p=(slot[0], slot[1]), f=fresh:
+                                     self.summon_guard(p, f, bar_open=True))
+                    summoned += 1
+                    METRICS.bump('summon')
+                    time.sleep(HUNT_SUMMON_CLICK_PAUSE)
         return summoned
 
     def run_provoke(self, frame):
