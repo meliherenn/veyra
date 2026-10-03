@@ -743,6 +743,49 @@ def test_fight_hard_ceiling_pauses_even_while_alive(mocked):
     assert bot.manual_pause and bot.gate.latched
 
 
+def test_skipped_fight_actions_run_when_toolbar_arrives_late(mocked):
+    """Oyun lag'lıyken araç çubuğu 6 sn içinde gelmezse eylemler eskiden
+    kalıcı atlanıyordu; artık çubuk dövüş içinde göründüğünde yapılıyor."""
+    bot = mocked
+    bot.provoke = False
+    bot.auto_battle = bot.mount_summon = True
+    bot.args.dry_run = False
+    bot.detector.protection_template.return_value = False
+    bot.detector.detect_layout.return_value = None
+    bot.detector.check_bot_protection.return_value = (False, '')
+    bot.detector.capture_screen.return_value = np.zeros((1080, 1920, 3), np.uint8)
+    bot.vision.confirm_apply_button.return_value = None
+    state = {'toolbar': False}
+    points = {'auto': (50, 197), 'mount': (50, 244)}
+    def fb(frame, kind, threshold=None):
+        if not state['toolbar']:
+            return None
+        return points[kind]
+    bot.vision.fight_button.side_effect = fb
+    bot.perform_fight_actions()
+    assert bot._pending_actions == ['auto', 'mount']
+    bot.mouse.click.assert_not_called()
+    # Çubuk sonradan geldi: dövüş bekleme döngüsü atlananları uygular.
+    state['toolbar'] = True
+    bot.vision.result_button.return_value = None
+    bot.fight_idle(np.zeros((1080, 1920, 3), np.uint8), None, main.time.monotonic())
+    assert bot.mouse.click.call_count == 2   # auto + mount
+    assert bot._pending_actions == []
+
+
+def test_select_fast_fails_when_attack_button_never_appears(mocked):
+    """Seçim tıklaması işlemmediğinde 8 sn kör beklemek yerine 3.5 sn'de
+    yeni hedef aranır."""
+    bot = mocked
+    bot.phase, bot.since = 'SELECTING', main.time.monotonic() - 4.0
+    bot.vision.attack_button.return_value = None
+    bot.vision.selected_name.return_value = ''
+    bot.target = None
+    bot.avoid = []
+    bot.tick()
+    assert bot.phase == 'SEARCH' and bot.select_failures == 1
+
+
 def test_new_attack_rearms_fight_actions(mocked):
     bot = mocked
     bot.fight_actions_done = True

@@ -121,7 +121,10 @@ HUNT_NAME_MATCH_RATIO = 0.82
 # üst bilgi kutusunun sıkı eşiğiyle verilir.
 HUNT_LABEL_MATCH_RATIO = 0.75
 # Saldır tıklamasından sonra harita hâlâ görünüyorsa saldırı başlamamış sayılır.
-HUNT_ENGAGE_TIMEOUT = 8.0
+HUNT_ENGAGE_TIMEOUT = 6.0
+# Seçim tıklamasından sonra bu süre içinde saldırı düğmesi hiç görünmezse
+# tıklama işlememiştir: 8 sn'lik tam timeout beklenmeden hedef yenilenir.
+HUNT_SELECT_FAST_FAIL = 3.5
 # Dövüş süresi sınırı artık canlılık tabanlıdır: kare değiştikçe (can barları,
 # animasyon, hasar yazıları) bekleme yenilenir; 9 yaratıklık provokasyonlu
 # dövüşler 3+ dakika sürdüğü için sabit 90 sn erken kesiyordu.

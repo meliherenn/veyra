@@ -22,7 +22,8 @@ from config import (POLL_INTERVAL, SELECT_TIMEOUT, TARGET_RETRY_SECONDS, NO_FISH
                     HUNT_PROVOKE_BAR_TIMEOUT, HUNT_SUMMON_CLICK_PAUSE,
                     HUNT_SUMMON_MAX_PER_SLOT,
                     HUNT_CONFIRM_RETRIES, HUNT_LABEL_MATCH_RATIO,
-                    HUNT_FIGHT_STATIC_SECONDS, HUNT_FIGHT_MAX_SECONDS, HUNT_FIGHT_SIGMA)
+                    HUNT_FIGHT_STATIC_SECONDS, HUNT_FIGHT_MAX_SECONDS, HUNT_FIGHT_SIGMA,
+                    HUNT_SELECT_FAST_FAIL)
 import config as _cfg
 from hunt_catalog import KNOWN, match_species, name_score, remember_seen, resolve_requested
 from hunt_vision import HuntVision
@@ -76,6 +77,8 @@ class HuntBot(FishingBot):
         self._fight_block_start = None
         self._fight_sig = None
         self._fight_alive_at = 0.0
+        self._pending_actions = []
+        self.last_pending_check = 0.0
         self.last_full_observe = 0.0
         self.last_wait_notice = 0.0
         self.actions_done_at = 0.0
@@ -127,6 +130,15 @@ class HuntBot(FishingBot):
         if button:
             self.finish_fight(frame, button, now)
             return True
+        if (self._pending_actions and now - self.actions_done_at < 25.0
+                and now - self.last_pending_check >= 1.0):
+            self.last_pending_check = now
+            if all(self.vision.fight_button(frame, k) is not None
+                   for k in self._pending_actions):
+                kinds, self._pending_actions = self._pending_actions, []
+                self.notice('Geç gelen araç çubuğu görüldü; atlanan eylemler yapılıyor.')
+                self._run_fight_sequence(kinds, frame)
+                return True
         waited = now - self.engaged_at
         if waited > HUNT_FIGHT_TIMEOUT:
             return False                      # zaman aşımını tam yol yönetir
@@ -580,21 +592,28 @@ class HuntBot(FishingBot):
             frame = self.detector.capture()
         missing = [k for k in kinds if self.vision.fight_button(frame, k) is None]
         if missing:
+            # Oyun lag'lıyken araç çubuğu geç gelebilir: bekletilip dövüş
+            # ilerledikçe yeniden denenir (eskiden kalıcı atlanıyordu).
             self.notice(f"Dövüş araç çubuğunda {', '.join(missing)} görünmedi; "
-                        'bu eylemler atlandı.')
+                        'dövüş ilerledikçe yeniden denenir.')
+            self._pending_actions = missing
             kinds = [k for k in kinds if k not in missing]
             if not kinds:
                 return
-        if self.provoke:
+        self._run_fight_sequence(kinds, frame)
+
+    def _run_fight_sequence(self, kinds, frame):
+        """Verilen dövüş eylemlerini sırayla uygular (ilk geçiş ya da gecikmiş deneme)."""
+        if 'provoke' in kinds and self.provoke:
             try:
                 self.run_provoke(frame)
             except InterruptedError as error:
                 self.notice(f'Provokasyon yarıda kaldı: {error}')
-        if self.auto_battle:
+        if 'auto' in kinds and self.auto_battle:
             frame = self.detector.capture()
             if self.click_fight_button(frame, 'auto', 'Otomatik savaş açılıyor.'):
                 self.confirm_pending_action(HUNT_AUTO_CONFIRM_WINDOW)
-        if self.mount_summon:
+        if 'mount' in kinds and self.mount_summon:
             frame = self.capture_parked(frame)
             if self.click_fight_button(frame, 'mount', 'Binek çağırılıyor.'):
                 self.confirm_pending_action(3.5)
@@ -788,6 +807,7 @@ class HuntBot(FishingBot):
                 self.fight_actions_done = False
                 self.confirm_retries = 0
                 self.last_confirm_check = 0.0
+                self._pending_actions = []
                 self._fight_sig = None
                 self._fight_alive_at = time.monotonic()
                 self.last_full_observe = 0.0
@@ -802,6 +822,11 @@ class HuntBot(FishingBot):
                 self.notice(f'Bu hedef atlandı: {header[:60]}. Ad seçilen yaratıkla örtüşmüyor.')
                 self.reset_hunt_target(now)
                 return
+        if now - self.since > _cfg.HUNT_SELECT_FAST_FAIL and button is None:
+            # Saldırı düğmesi hiç gelmediyse tıklama işlememiştir: 8 sn'lik
+            # tam timeout yerine hemen yeni hedef aranır.
+            self.note_selection_failure(frame, now, 'Saldır düğmesi gelmedi.')
+            return
         if now - self.since > SELECT_TIMEOUT:
             METRICS.bump('select_timeout')
             self.note_selection_failure(frame, now, 'Yaratık seçimi doğrulanamadı.')
