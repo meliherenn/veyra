@@ -21,7 +21,8 @@ from config import (POLL_INTERVAL, SELECT_TIMEOUT, TARGET_RETRY_SECONDS, NO_FISH
                     HUNT_SELECT_FAILURES_BEFORE_PAUSE, HUNT_AVOID_SECONDS,
                     HUNT_PROVOKE_BAR_TIMEOUT, HUNT_SUMMON_CLICK_PAUSE,
                     HUNT_FIGHT_SETTLE_SECONDS, HUNT_SUMMON_MAX_PER_SLOT,
-                    HUNT_CONFIRM_RETRIES, HUNT_LABEL_MATCH_RATIO)
+                    HUNT_CONFIRM_RETRIES, HUNT_LABEL_MATCH_RATIO,
+                    HUNT_FIGHT_STATIC_SECONDS, HUNT_FIGHT_MAX_SECONDS, HUNT_FIGHT_SIGMA)
 import config as _cfg
 from hunt_catalog import KNOWN, match_species, name_score, remember_seen, resolve_requested
 from hunt_vision import HuntVision
@@ -73,6 +74,8 @@ class HuntBot(FishingBot):
         self.current_name = ''
         self.scale_hint = 1.0
         self._fight_block_start = None
+        self._fight_sig = None
+        self._fight_alive_at = 0.0
         self.last_full_observe = 0.0
         self.last_wait_notice = 0.0
         self.actions_done_at = 0.0
@@ -104,8 +107,19 @@ class HuntBot(FishingBot):
         self._last_ocr_check = now
         return self.detector.check_bot_protection(frame, False)
 
+    def _note_fight_activity(self, frame, now):
+        """Dövüş canlılığı: küçültülmüş kare imzası değişiyorsa dövüş sürüyor."""
+        if frame is None or frame.size == 0:
+            return
+        sig = cv2.resize(cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY), (96, 54)).astype(np.float32)
+        if (self._fight_sig is not None
+                and float(np.mean(np.abs(sig - self._fight_sig))) >= HUNT_FIGHT_SIGMA):
+            self._fight_alive_at = now
+        self._fight_sig = sig
+
     def fight_idle(self, frame, now):
         """Dövüş beklenirken (girdi YOK) ucuz kare kontrolü. True: kare ele alındı."""
+        self._note_fight_activity(frame, now)
         if self.detector.protection_template(frame):
             self.block('Bot koruması; doğrulamayı siz tamamlayın.', frame)
             return True
@@ -358,12 +372,16 @@ class HuntBot(FishingBot):
                 # Bekleme/koruma süresi dövüş zaman aşımına sayılmaz.
                 self.engaged_at += now - self._fight_block_start
                 self._fight_block_start = None
+            self._note_fight_activity(frame, now)
             waited = now - self.engaged_at
-            if waited > HUNT_FIGHT_TIMEOUT:
+            static = now - self._fight_alive_at > HUNT_FIGHT_STATIC_SECONDS
+            if waited > HUNT_FIGHT_MAX_SECONDS or (waited > HUNT_FIGHT_TIMEOUT and static):
                 METRICS.bump('fight_timeout')
                 self.manual_pause = True
-                self.block(f'Dövüş {HUNT_FIGHT_TIMEOUT:.0f} sn içinde bitmedi. '
-                           'Ekranı kontrol edip F8 ile devam edin.', frame)
+                reason = (f'Dövüş {waited:.0f} sn sürdü ve ekran '
+                          f'{now - self._fight_alive_at:.0f} sn değişmedi; takılmış olabilir. '
+                          if static else f'Dövüş {waited:.0f} sn içinde bitmedi (üst sınır). ')
+                self.block(reason + 'Ekranı kontrol edip F8 ile devam edin.', frame)
                 return
             if not self.fight_actions_done and (self.provoke or self.mount_summon
                                                 or self.auto_battle):
@@ -756,6 +774,8 @@ class HuntBot(FishingBot):
                 self.fight_actions_done = False
                 self.confirm_retries = 0
                 self.last_confirm_check = 0.0
+                self._fight_sig = None
+                self._fight_alive_at = time.monotonic()
                 self.last_full_observe = 0.0
                 self._fight_block_start = None
                 self.note_selection_success()

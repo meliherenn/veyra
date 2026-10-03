@@ -710,6 +710,38 @@ def test_pending_confirm_is_retried_during_fight_wait(mocked, monkeypatch):
     assert performed == [1.5] and bot.confirm_retries == 1
 
 
+def test_fight_wait_extends_while_the_screen_keeps_changing(mocked):
+    """Provokasyonlu dövüşler 3+ dakika sürer; kare değiştikçe 90 sn sınırı
+    yenilenir, dövüş kesilmez."""
+    bot = mocked
+    now = main.time.monotonic()
+    bot.phase, bot.engaged_at, bot._fight_alive_at = 'ENGAGED', now - 120, now
+    obs = SimpleNamespace(blocked=None, layout=None)
+    bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, now)
+    assert not bot.manual_pause and bot.phase == 'ENGAGED'
+
+
+def test_static_fight_pauses_after_the_static_window(mocked):
+    """Ekran 30 sn'den uzun değişmediyse dövüş takılmıştır: erken dur ve alarm ver."""
+    bot = mocked
+    now = main.time.monotonic()
+    bot.phase, bot.engaged_at, bot._fight_alive_at = 'ENGAGED', now - 120, now - 45
+    obs = SimpleNamespace(blocked=None, layout=None)
+    bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, now)
+    assert bot.manual_pause and bot.gate.latched
+    bot.sound.start_alarm_loop.assert_called_once()
+
+
+def test_fight_hard_ceiling_pauses_even_while_alive(mocked):
+    """Ekran canlı görünsé bile 10 dakikalık üst sınır keser."""
+    bot = mocked
+    now = main.time.monotonic()
+    bot.phase, bot.engaged_at, bot._fight_alive_at = 'ENGAGED', now - 700, now
+    obs = SimpleNamespace(blocked=None, layout=None)
+    bot.off_map(np.zeros((10, 10, 3), np.uint8), obs, now)
+    assert bot.manual_pause and bot.gate.latched
+
+
 def test_new_attack_rearms_fight_actions(mocked):
     bot = mocked
     bot.fight_actions_done = True

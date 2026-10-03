@@ -122,8 +122,17 @@ HUNT_NAME_MATCH_RATIO = 0.82
 HUNT_LABEL_MATCH_RATIO = 0.75
 # Saldır tıklamasından sonra harita hâlâ görünüyorsa saldırı başlamamış sayılır.
 HUNT_ENGAGE_TIMEOUT = 8.0
-# Dövüş ekranının sonuç penceresine dönüşmesi için beklenen en uzun süre.
+# Dövüş süresi sınırı artık canlılık tabanlıdır: kare değiştikçe (can barları,
+# animasyon, hasar yazıları) bekleme yenilenir; 9 yaratıklık provokasyonlu
+# dövüşler 3+ dakika sürdüğü için sabit 90 sn erken kesiyordu.
+# - HUNT_FIGHT_TIMEOUT: asgari bekleme (bu süreden önce asla kesilmez).
+# - Kare HUNT_FIGHT_STATIC_SECONDS boyunca hiç değişmezse dövüş takılmış
+#   sayılır ve erken durulur.
+# - HUNT_FIGHT_MAX_SECONDS: ne olursa olsun kesin üst sınır.
 HUNT_FIGHT_TIMEOUT = 90.0
+HUNT_FIGHT_STATIC_SECONDS = 30.0
+HUNT_FIGHT_MAX_SECONDS = 600.0
+HUNT_FIGHT_SIGMA = 1.5
 # "Ava" düğmesine basıldıktan sonra harita dönmezse tıklamayı tekrarlama aralığı.
 HUNT_RETURN_RETRY = 2.5
 HUNT_RETURN_CLICK_LIMIT = 3

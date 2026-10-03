@@ -119,8 +119,10 @@ Botun yanlış yaratığa saldırmaması için ad iki kez doğrulanır (haritada
 ve seçimden sonra üst bilgi kutusu; kutudaki ⓘ simgesinin OCR gürültüsü
 tolere edilir). Seçim doğrulanamazsa tıklama noktası sırayla
 değiştirilir (`HUNT_CLICK_DY_FALLBACKS`); art arda 4 başarısızlıkta bot alarm
-verip durur. Dövüş 90 sn içinde bitmezse de durur ve ekran görüntüsünü
-`runtime/last-pause.png` dosyasına kaydeder.
+verip durur. Dövüş süresi canlılık tabanlıdır: ekran değiştikçe (can barları,
+animasyon) bekleme yenilenir, provokasyonlu uzun dövüşler kesilmez; ekran 30 sn
+hiç değişmezse takılma sayılır, 10 dakika kesin üst sırdır. Bekleyen dövüş
+`runtime/last-pause.png` dosyasına kaydedilir.
 
 ## Terminal seçenekleri
 
