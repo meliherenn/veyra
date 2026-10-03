@@ -152,8 +152,6 @@ HUNT_PROVOKE_BAR_TIMEOUT = 6.0
 # eski 0.30 sn + 0.35 sn'lik yoklama darboğazdı. Koruma/odak/slot
 # doğrulaması her tıklamada aynen çalışır, yalnız ölü bekleme kalkar.
 HUNT_SUMMON_CLICK_PAUSE = 0.10
-# Dövüş ekranı açıldıktan sonra düğmelere basmadan önce beklenen oturma süresi.
-HUNT_FIGHT_SETTLE_SECONDS = 0.6
 # Çağırma slotu: sayaç "kullanilan/limit" yazar; tıklama sonrası sayaç
 # pikselleri değişmezse (jeton bitti / sınır doldu) o slotta durulur.
 HUNT_SUMMON_MAX_PER_SLOT = 20
