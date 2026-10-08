@@ -53,6 +53,39 @@ def test_capture_returns_the_window_and_records_its_region(monkeypatch):
     detector.close()
 
 
+def test_game_window_is_brought_back_after_the_grace_period(monkeypatch, tmp_path):
+    """Odak kaybında bot 12 sn sonra oyun penceresini kendiliğinden öne alır;
+    nezaket süresi içinde denemez ve oyun dönünce sayaç sıfırlanır."""
+    from config import FOCUS_REFOCUS_AFTER
+    detector = ScreenDetector(grabber=FakeGrabber(None))
+    detector._capture_portal = lambda: None
+    detector._capture_spectacle = lambda: np.zeros((1080, 1920, 3), np.uint8)
+    bot = _bot(monkeypatch, tmp_path, detector)
+    import queue as _queue
+    active = {'game': False}
+    focus_calls = []
+    desktop = SimpleNamespace(commands=_queue.Queue(),
+                              is_game_active=lambda: active['game'],
+                              focus_game=lambda: focus_calls.append(1) or None,
+                              state={'app': 'zcode', 'title': 'ZCode',
+                                     'geometry': [0, 0, 1920, 1080], 'screens': 1})
+    bot.desktop = desktop
+    bot.tick()
+    assert focus_calls == []          # nezaket süresi: hemen çekmez
+    now = time.monotonic()
+    bot.focus_lost_since = now - (FOCUS_REFOCUS_AFTER + 3)
+    bot.focus_refocus_at = now - 1.0
+    bot.tick()
+    assert focus_calls == [1]         # süre doldu: öne aldı
+    # aralik dolmadan tekrar denemez
+    bot.tick()
+    assert focus_calls == [1]
+    # oyun döndü: sayaçlar sıfır
+    active['game'] = True
+    bot.tick()
+    assert bot.focus_lost_since is None and bot.focus_refocus_at == 0.0
+
+
 def test_focus_lost_for_ten_minutes_raises_the_alarm(monkeypatch, tmp_path):
     detector = ScreenDetector(grabber=FakeGrabber(None))
     detector._capture_portal = lambda: None

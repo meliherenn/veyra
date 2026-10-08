@@ -102,6 +102,12 @@ HUNT_LABEL_MIN_S = 200
 # her tekrarda bir kez daha çalınır.
 FOCUS_ALERT_AFTER_SECONDS = 600.0
 FOCUS_ALERT_REPEAT_SECONDS = 600.0
+# Odak kaybında önce oyun penceresi kendiliğinden öne getirilir. Kısa
+# nezaket süresi bilerek yapılan geçişleri (panele bakmak, F8 sonrası)
+# çekmemek için; ardından bu aralıkla yeniden denenir. Ekran kilitliyse
+# başarısız kalır ve alarm akışı devreye girer.
+FOCUS_REFOCUS_AFTER = 12.0
+FOCUS_REFOCUS_INTERVAL = 10.0
 
 # Renkten bağımsız etiket tespiti: her haritanın etiket rengi farklı
 # (altın, kırmızı, hue 60 limon yeşili...). Etiket yazısı parlak (V>=200),

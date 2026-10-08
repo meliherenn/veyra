@@ -298,6 +298,29 @@ class HuntBot(FishingBot):
                     return
                 finally:
                     self.desktop.allow_action_popup = False
+            # Onay popup'ı odağı tutuyorsa yukarıdaki onay yolu halletti;
+            # kalan durumda (oyun arkada) pencere önce kendiliğinden öne
+            # getirilir, olmuyorsa beklenir.
+            now = time.monotonic()
+            if self.focus_lost_since is None:
+                self.focus_lost_since = now
+                self.next_focus_alert = now + _cfg.FOCUS_ALERT_AFTER_SECONDS
+                self.focus_refocus_at = now + _cfg.FOCUS_REFOCUS_AFTER
+            elif now >= self.focus_refocus_at:
+                self.focus_refocus_at = now + _cfg.FOCUS_REFOCUS_INTERVAL
+                try:
+                    self.desktop.focus_game()
+                    METRICS.bump('focus_refocus')
+                    self.notice('Oyun penceresi öne getirildi.')
+                    return
+                except Exception as exc:
+                    METRICS.bump('focus_refocus_fail')
+                    self.notice(f'Oyun penceresi öne getirilemedi ({exc}); bekleniyor.')
+            if now >= self.next_focus_alert:
+                self.sound.play_once()
+                self.next_focus_alert = now + _cfg.FOCUS_ALERT_REPEAT_SECONDS
+                self.notice(f'Oyun {int((now - self.focus_lost_since) / 60)} dakikadır '
+                            'önede değil; alarm verildi.')
             METRICS.bump('focus_wait')
             self.blocked_frames = 0
             state = self.desktop.state

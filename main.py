@@ -27,7 +27,8 @@ from config import (ROOT, POLL_INTERVAL, SELECT_TIMEOUT, HARVEST_START_TIMEOUT,
                     REACQUIRE_RETRY_DELAY, AUTO_PANEL_PROBE_INTERVAL,
                     WARNING_CLOSE_INTERVAL, WARNING_CLOSE_LIMIT,
                     WARNING_CLOSE_WINDOW, LOG_MAX_BYTES, LOG_BACKUPS,
-                    FOCUS_ALERT_AFTER_SECONDS, FOCUS_ALERT_REPEAT_SECONDS)
+                    FOCUS_ALERT_AFTER_SECONDS, FOCUS_ALERT_REPEAT_SECONDS,
+                    FOCUS_REFOCUS_AFTER, FOCUS_REFOCUS_INTERVAL)
 from screen_detector import ScreenDetector
 from sound_alert import SoundAlert
 from state import HarvestTracker, ResumeGate, StopRequested
@@ -102,6 +103,7 @@ class FishingBot:
         self.sea_skip_notice = False
         self.focus_lost_since = None
         self.next_focus_alert = FOCUS_ALERT_AFTER_SECONDS
+        self.focus_refocus_at = 0.0
         self.last_fish = time.monotonic()
         self.last_notice = ''
         self.last_notice_time = 0
@@ -353,7 +355,19 @@ class FishingBot:
             if self.focus_lost_since is None:
                 self.focus_lost_since = now
                 self.next_focus_alert = now + FOCUS_ALERT_AFTER_SECONDS
-            elif now >= self.next_focus_alert:
+                self.focus_refocus_at = now + FOCUS_REFOCUS_AFTER
+            elif now >= self.focus_refocus_at:
+                # Oyun penceresi açık ama arkada: kendiliğinden öne getir.
+                self.focus_refocus_at = now + FOCUS_REFOCUS_INTERVAL
+                try:
+                    self.desktop.focus_game()
+                    METRICS.bump('focus_refocus')
+                    self.notice('Oyun penceresi öne getirildi.')
+                    return
+                except Exception as exc:
+                    METRICS.bump('focus_refocus_fail')
+                    self.notice(f'Oyun penceresi öne getirilemedi ({exc}); bekleniyor.')
+            if now >= self.next_focus_alert:
                 self.sound.play_once()
                 self.next_focus_alert = now + FOCUS_ALERT_REPEAT_SECONDS
                 self.notice(f'Oyun {int((now - self.focus_lost_since) / 60)} dakikadır '
@@ -363,6 +377,7 @@ class FishingBot:
             return
         self.focus_lost_since = None
         self.next_focus_alert = time.monotonic() + FOCUS_ALERT_AFTER_SECONDS
+        self.focus_refocus_at = 0.0
         frame = self.detector.capture()
         frame_time = time.monotonic()
         obs = self.detector.observe(frame)
