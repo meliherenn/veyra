@@ -4,6 +4,8 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 
+import time
+
 import main
 from main import FishingBot
 from screen_detector import ScreenDetector
@@ -49,6 +51,34 @@ def test_capture_returns_the_window_and_records_its_region(monkeypatch):
     assert frame is window
     assert detector.capture_rect == (0, 0, 1920, 1080)
     detector.close()
+
+
+def test_focus_lost_for_ten_minutes_raises_the_alarm(monkeypatch, tmp_path):
+    detector = ScreenDetector(grabber=FakeGrabber(None))
+    detector._capture_portal = lambda: None
+    detector._capture_spectacle = lambda: np.zeros((1080, 1920, 3), np.uint8)
+    bot = _bot(monkeypatch, tmp_path, detector)
+    # Mock masaüstünde commands gerçek kuyruk olmalı; yoksa control_guard
+    # sonsuz döngüye girer (RAM şişmesi bu testten geliyordu).
+    import queue as _queue
+    active = {'game': False}
+    desktop = SimpleNamespace(commands=_queue.Queue(),
+                              is_game_active=lambda: active['game'],
+                              state={'app': 'zcode', 'title': 'ZCode',
+                                     'geometry': [0, 0, 1920, 1080], 'screens': 1})
+    bot.desktop = desktop
+    bot.focus_lost_since = time.monotonic() - 601.0
+    bot.next_focus_alert = time.monotonic() - 1.0
+    bot.sound = Mock()
+    bot.tick()
+    bot.sound.play_once.assert_called_once()
+    # vade yenilendi: ikinci tik alarma tekrar girmez
+    bot.tick()
+    assert bot.sound.play_once.call_count == 1
+    # oyun dönerse sayaçlar sıfırlanır
+    active['game'] = True
+    bot.tick()
+    assert bot.focus_lost_since is None
 
 
 def test_capture_falls_back_to_portal_then_screenshot_when_window_is_gone(monkeypatch):

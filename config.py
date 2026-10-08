@@ -97,6 +97,12 @@ HUNT_CLICK_DY_FALLBACKS = (-37, -30, -44, 0)
 # yazısı V≈251-254 olduğu için 248 üstü yalnız yazıyı bırakır.
 HUNT_LABEL_MIN_V = 248
 HUNT_LABEL_MIN_S = 200
+# Oyun penceresi odağı kaybettiğinde bot güvenlik gereği bekler. Kullanıcı
+# uzaktayken bunun fark edilmesi için bu kadar süre sonra alarm verilir ve
+# her tekrarda bir kez daha çalınır.
+FOCUS_ALERT_AFTER_SECONDS = 600.0
+FOCUS_ALERT_REPEAT_SECONDS = 600.0
+
 # Renkten bağımsız etiket tespiti: her haritanın etiket rengi farklı
 # (altın, kırmızı, hue 60 limon yeşili...). Etiket yazısı parlak (V>=200),
 # doygun (S>=80) ve KÖTÜ zeminine göre kontrastlıdır (V - bulanık V >= 60);

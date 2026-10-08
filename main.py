@@ -26,7 +26,8 @@ from config import (ROOT, POLL_INTERVAL, SELECT_TIMEOUT, HARVEST_START_TIMEOUT,
                     RESUME_FAST_SECONDS, REACQUIRE_ATTEMPTS,
                     REACQUIRE_RETRY_DELAY, AUTO_PANEL_PROBE_INTERVAL,
                     WARNING_CLOSE_INTERVAL, WARNING_CLOSE_LIMIT,
-                    WARNING_CLOSE_WINDOW, LOG_MAX_BYTES, LOG_BACKUPS)
+                    WARNING_CLOSE_WINDOW, LOG_MAX_BYTES, LOG_BACKUPS,
+                    FOCUS_ALERT_AFTER_SECONDS, FOCUS_ALERT_REPEAT_SECONDS)
 from screen_detector import ScreenDetector
 from sound_alert import SoundAlert
 from state import HarvestTracker, ResumeGate, StopRequested
@@ -99,6 +100,8 @@ class FishingBot:
         self.scroll_before = None
         self.last_scroll = 0
         self.sea_skip_notice = False
+        self.focus_lost_since = None
+        self.next_focus_alert = FOCUS_ALERT_AFTER_SECONDS
         self.last_fish = time.monotonic()
         self.last_notice = ''
         self.last_notice_time = 0
@@ -340,10 +343,26 @@ class FishingBot:
             self.notice(str(e))
             return
         if not self.desktop.is_game_active():
+            # Güvenlik gereği odak yokken tıklanmaz; kullanıcı uzaktayken
+            # durumu fark edebilsin diye 10 dakikada bir alarm verilir.
             METRICS.bump('focus_wait')
             self.blocked_frames = 0
-            self.block('Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.', alarm=False)
+            state = self.desktop.state
+            suffix = f' (aktif: {str(state.get("app", ""))[:24]} / {str(state.get("title", ""))[:40]})'
+            now = time.monotonic()
+            if self.focus_lost_since is None:
+                self.focus_lost_since = now
+                self.next_focus_alert = now + FOCUS_ALERT_AFTER_SECONDS
+            elif now >= self.next_focus_alert:
+                self.sound.play_once()
+                self.next_focus_alert = now + FOCUS_ALERT_REPEAT_SECONDS
+                self.notice(f'Oyun {int((now - self.focus_lost_since) / 60)} dakikadır '
+                            'önede değil; alarm verildi.')
+            self.block('Oyun önde değil; fare bekliyor. Oyuna dönünce devam edecek.' + suffix,
+                       alarm=False)
             return
+        self.focus_lost_since = None
+        self.next_focus_alert = time.monotonic() + FOCUS_ALERT_AFTER_SECONDS
         frame = self.detector.capture()
         frame_time = time.monotonic()
         obs = self.detector.observe(frame)
