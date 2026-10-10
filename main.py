@@ -28,7 +28,9 @@ from config import (ROOT, POLL_INTERVAL, SELECT_TIMEOUT, HARVEST_START_TIMEOUT,
                     WARNING_CLOSE_INTERVAL, WARNING_CLOSE_LIMIT,
                     WARNING_CLOSE_WINDOW, LOG_MAX_BYTES, LOG_BACKUPS,
                     FOCUS_ALERT_AFTER_SECONDS, FOCUS_ALERT_REPEAT_SECONDS,
-                    FOCUS_REFOCUS_AFTER, FOCUS_REFOCUS_INTERVAL)
+                    FOCUS_REFOCUS_AFTER, FOCUS_REFOCUS_INTERVAL,
+                    FOCUS_REFOCUS_MAX_STREAK, SCREEN_STUCK_ALERT_AFTER,
+                    FOCUS_ALERT_REPEAT_SECONDS)
 from screen_detector import ScreenDetector
 from sound_alert import SoundAlert
 from state import HarvestTracker, ResumeGate, StopRequested
@@ -104,11 +106,25 @@ class FishingBot:
         self.focus_lost_since = None
         self.next_focus_alert = FOCUS_ALERT_AFTER_SECONDS
         self.focus_refocus_at = 0.0
+        self._refocus_streak = 0
+        self._stuck_key = None
+        self._stuck_since = 0.0
+        self._stuck_alert_at = 0.0
         self.last_fish = time.monotonic()
         self.last_notice = ''
         self.last_notice_time = 0
         self.mouse.guard = self.control_guard
         self.profession = ProfessionController(self, RUNTIME)
+
+    def _nudge_display(self):
+        """DPMS ile kararmış ekranı uyandırmak için 1 px imleç oynatımı.
+
+        Kilitli ekranda etkisizdir (pencereye girdi gitmez); zararsızdır."""
+        try:
+            step = 1 if self._refocus_streak % 2 == 0 else -1
+            self.mouse._run('mousemove', '-x', step, '-y', 1)
+        except Exception:
+            pass
 
     def notice(self, text):
         if text != self.last_notice or time.monotonic()-self.last_notice_time > 30:
@@ -160,6 +176,20 @@ class FishingBot:
         return (round(x+point[0]*width/frame.shape[1]), round(y+point[1]*height/frame.shape[0]))
 
     def block(self, reason, frame=None, alarm=True, seconds=None):
+        # Aynı nedenle uzun süre kilitlenen ekran (kapatılamayan 'Hata'
+        # penceresi, dönmeyen harita) sessiz kalmasın: 5 dk sonra alarm,
+        # ardından 10 dk'da bir tekrar.
+        key = reason[:60]
+        now = time.monotonic()
+        if key != self._stuck_key:
+            self._stuck_key, self._stuck_since = key, now
+            self._stuck_alert_at = now + SCREEN_STUCK_ALERT_AFTER
+        elif now >= self._stuck_alert_at:
+            self._stuck_alert_at = now + FOCUS_ALERT_REPEAT_SECONDS
+            self.sound.play_once()
+            METRICS.bump('screen_stuck_alert')
+            self.notice(f"Ekran {int((now - self._stuck_since) / 60)} dakikadır aynı "
+                        f"durumda ({key}…); alarm verildi.")
         new = not self.gate.latched
         self.gate.block(seconds)
         self.notice(reason)
@@ -356,17 +386,25 @@ class FishingBot:
                 self.focus_lost_since = now
                 self.next_focus_alert = now + FOCUS_ALERT_AFTER_SECONDS
                 self.focus_refocus_at = now + FOCUS_REFOCUS_AFTER
-            elif now >= self.focus_refocus_at:
+            elif (now >= self.focus_refocus_at
+                    and self._refocus_streak < FOCUS_REFOCUS_MAX_STREAK):
                 # Oyun penceresi açık ama arkada: kendiliğinden öne getir.
+                # Kilitli/kararmış ekranda 'başarı' anlıktır ve döngü flap
+                # yapabilir; seri limiti dolunca deneme bırakılır.
                 self.focus_refocus_at = now + FOCUS_REFOCUS_INTERVAL
+                self._refocus_streak += 1
+                self._nudge_display()
                 try:
                     self.desktop.focus_game()
                     METRICS.bump('focus_refocus')
-                    self.notice('Oyun penceresi öne getirildi.')
-                    return
+                    self.notice('Oyun penceresi öne getirilmeye çalışıldı.')
                 except Exception as exc:
                     METRICS.bump('focus_refocus_fail')
                     self.notice(f'Oyun penceresi öne getirilemedi ({exc}); bekleniyor.')
+            elif (self._refocus_streak >= FOCUS_REFOCUS_MAX_STREAK
+                    and self.focus_refocus_at < now):
+                self.focus_refocus_at = now + FOCUS_ALERT_REPEAT_SECONDS
+                self.notice('Odak tekrar alınamadı (ekran kilitli olabilir); alarm bekleniyor.')
             if now >= self.next_focus_alert:
                 self.sound.play_once()
                 self.next_focus_alert = now + FOCUS_ALERT_REPEAT_SECONDS
@@ -378,6 +416,11 @@ class FishingBot:
         self.focus_lost_since = None
         self.next_focus_alert = time.monotonic() + FOCUS_ALERT_AFTER_SECONDS
         self.focus_refocus_at = 0.0
+        self._refocus_streak = 0
+        self._refocus_streak = 0
+        self._stuck_key = None
+        self._stuck_since = 0.0
+        self._stuck_alert_at = 0.0
         frame = self.detector.capture()
         frame_time = time.monotonic()
         obs = self.detector.observe(frame)

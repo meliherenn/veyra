@@ -23,7 +23,7 @@ from config import (POLL_INTERVAL, SELECT_TIMEOUT, TARGET_RETRY_SECONDS, NO_FISH
                     HUNT_SUMMON_MAX_PER_SLOT,
                     HUNT_CONFIRM_RETRIES, HUNT_LABEL_MATCH_RATIO,
                     HUNT_FIGHT_STATIC_SECONDS, HUNT_FIGHT_MAX_SECONDS, HUNT_FIGHT_SIGMA,
-                    HUNT_SELECT_FAST_FAIL)
+                    HUNT_SELECT_FAST_FAIL, HUNT_FIGHT_BLOCK_BUDGET)
 import config as _cfg
 from hunt_catalog import KNOWN, match_species, name_score, remember_seen, resolve_requested
 from hunt_vision import HuntVision
@@ -79,6 +79,7 @@ class HuntBot(FishingBot):
         self._fight_alive_at = 0.0
         self._pending_actions = []
         self.last_pending_check = 0.0
+        self._block_budget = HUNT_FIGHT_BLOCK_BUDGET
         self.last_full_observe = 0.0
         self.last_wait_notice = 0.0
         self.actions_done_at = 0.0
@@ -97,7 +98,12 @@ class HuntBot(FishingBot):
         if keep is not None:
             self.phase = keep
             if self._fight_block_start is None:
-                self._fight_block_start = time.monotonic()
+                # Bekleme/koruma süresi dövüş saatini durdurur ama sınırsız
+                # olamaz: bütçe tükenirse saat işletilir ve zaman aşımı
+                # gerçek zamanla da yakalanır (72 dk'lık sessiz bekleme).
+                now = time.monotonic()
+                self._fight_block_start = now
+                self._block_budget -= now - self.engaged_at
 
     def protection_check(self, frame, ocr_interval=0.0):
         """Koruma kontrolü: şablon her zaman, OCR yedeği ocr_interval ile sınırlı."""
@@ -404,9 +410,14 @@ class HuntBot(FishingBot):
             self.off_map_since = now
         if self.phase == 'ENGAGED':
             if self._fight_block_start is not None:
-                # Bekleme/koruma süresi dövüş zaman aşımına sayılmaz.
-                self.engaged_at += now - self._fight_block_start
+                # Bekleme/koruma süresi dövüş saatini durdurur; ama dövüş
+                # başına 90 sn'lik bütçe vardır. Bütçe bitmişse artık süre
+                # gerçek zamana işler — sınırsız sessiz bekleme olamaz.
+                blocked_for = now - self._fight_block_start
                 self._fight_block_start = None
+                compensated = min(blocked_for, max(self._block_budget, 0.0))
+                self._block_budget -= compensated
+                self.engaged_at += blocked_for - compensated
             self._note_fight_activity(frame, now)
             waited = now - self.engaged_at
             static = now - self._fight_alive_at > HUNT_FIGHT_STATIC_SECONDS
@@ -833,6 +844,7 @@ class HuntBot(FishingBot):
                 self._pending_actions = []
                 self._fight_sig = None
                 self._fight_alive_at = time.monotonic()
+                self._block_budget = HUNT_FIGHT_BLOCK_BUDGET
                 self.last_full_observe = 0.0
                 self._fight_block_start = None
                 self.note_selection_success()

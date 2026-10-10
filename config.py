@@ -108,6 +108,17 @@ FOCUS_ALERT_REPEAT_SECONDS = 600.0
 # başarısız kalır ve alarm akışı devreye girer.
 FOCUS_REFOCUS_AFTER = 12.0
 FOCUS_REFOCUS_INTERVAL = 10.0
+# Odak geri almanın art arda başarısız/etkisiz kalabileceği deneme sayısı
+# (kilitli ekran). Sonrasında deneme bırakılır, alarm akışı devreye girer.
+FOCUS_REFOCUS_MAX_STREAK = 5
+# Ekran bu kadar süre AYNI nedenle bloklu kaldıysa (kapatılamayan oyun
+# hatası penceresi, dönmeyen harita vb.) alarm verilir ve 10 dk'da bir
+# tekrarlanır. 72 dakikalık sessiz bekleme bu yüzden eklendi.
+SCREEN_STUCK_ALERT_AFTER = 300.0
+# ENGAGED dövüşte block() beklemeleri dövüş saatini durdurur (kullanıcı
+# koruması); sınırsız olması bilinmeyen ekranda asla zaman aşımı vermemeye
+# yol açtı. Dövüş başına tazmin edilebilen en çok bekleme süresi.
+HUNT_FIGHT_BLOCK_BUDGET = 90.0
 
 # Renkten bağımsız etiket tespiti: her haritanın etiket rengi farklı
 # (altın, kırmızı, hue 60 limon yeşili...). Etiket yazısı parlak (V>=200),
